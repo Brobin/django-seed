@@ -1,0 +1,2 @@
+django
+fake-factory>=0.2
