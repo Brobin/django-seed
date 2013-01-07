@@ -6,10 +6,13 @@ Django-faker
 How to use
 ----------
 
+To install Django-faker you can use pip::
+
+    pip install django-faker
+
+
 Configuration
 ~~~~~~~~~~~~~
-::
-    pip install django-faker
 
 In django application `settings.py`::
 

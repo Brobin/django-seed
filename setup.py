@@ -28,7 +28,6 @@ setup(
         'Intended Audience :: Information Technology',
         'Programming Language :: Python',
         'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 3',
         'Topic :: Software Development :: Libraries :: Python Modules',
         'Topic :: Software Development :: Testing',
         'Topic :: Software Development :: Widget Sets',
@@ -38,8 +37,8 @@ setup(
     ],
     keywords='faker fixtures data test django',
     long_description=read_file('README.rst'),
-    install_requires=['django','faker>=0.2'],
-    tests_require=['django','faker>=0.2'],
+    install_requires=['django','fake-factory>=0.2'],
+    tests_require=['django','fake-factory>=0.2'],
     test_suite="runtests.runtests",
     zip_safe=False,
 )
