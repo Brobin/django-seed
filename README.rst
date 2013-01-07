@@ -8,6 +8,8 @@ How to use
 
 Configuration
 ~~~~~~~~~~~~~
+::
+    pip install django-faker
 
 In django application `settings.py`::
 
