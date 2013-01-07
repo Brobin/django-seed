@@ -1,7 +1,7 @@
 Django-faker
-========================
+============
 
-*Django-faker* uses [Faker][python-faker] to generate test data for Django models and templates.
+*Django-faker* uses `PyFaker`_ to generate test data for Django models and templates.
 
 How to use
 ----------
@@ -71,7 +71,7 @@ Faker is smart enough to relate the populated `Player` entities to one of popula
 Template tags and filter
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-Django-faker offers a useful template tags and filters for interact with [Faker][python-faker]::
+Django-faker offers a useful template tags and filters for interact with `PyFaker`_::
 
     {% fake 'name' as myname %}{% fake 'dateTimeBetween' '-10d' as mydate %}
 
@@ -116,9 +116,20 @@ Django-faker offers a useful template tags and filters for interact with [Faker]
     </contacts>
 
 
+Page preview
+~~~~~~~~~~~~
+Open `url.py` in your main application and add this url::
+
+    urlpatterns = patterns('',
+        ...
+        url(r'', include('django_faker.urls')),
+        ...
+    )
+
+http://127.0.0.1:8000/preview/ shows a faked browser windows, useful for screenshots.
 
 Running the Tests
-------------------------------------
+-----------------
 
 Run django tests in a django environment:
 
@@ -127,3 +138,6 @@ Run django tests in a django environment:
 or if you have 'django_faker' in INSTALLED_APPS:
 
     $ python manage.py test django_faker
+
+
+.. _PyFaker: https://www.github.com/joke2k/faker/
