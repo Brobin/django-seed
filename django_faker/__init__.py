@@ -5,7 +5,7 @@ Django-faker uses python-faker to generate test data for Django models and templ
 """
 from django.conf import settings
 
-__version__ = '0.1'
+__version__ = '0.2'
 
 class Faker(object):
 

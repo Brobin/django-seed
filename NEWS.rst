@@ -1,3 +1,9 @@
+0.2
+*Release date: 24-Jan-2013*
+
+* Add requirements
+* Fake browser preview
+
 0.1
 ---
 
