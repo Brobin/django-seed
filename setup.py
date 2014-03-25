@@ -37,8 +37,8 @@ setup(
     ],
     keywords='faker fixtures data test django',
     long_description=read_file('README.rst'),
-    install_requires=['django','fake-factory>=0.2'],
-    tests_require=['django','fake-factory>=0.2'],
+    install_requires=['django','fake-factory==0.2'],
+    tests_require=['django','fake-factory==0.2'],
     test_suite="runtests.runtests",
     zip_safe=False,
 )
