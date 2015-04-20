@@ -1,6 +1,6 @@
 from faker import Faker
-from django_faker.populator import Populator
-from django_faker import Faker as DjangoFaker
+from django_seed.seeder import Seeder
+from django_seed import Faker as DjangoFaker
 
 import random
 
@@ -51,11 +51,11 @@ class Action(models.Model):
     target= models.ForeignKey(Player, related_name='enemy_actions+', null=True)
 
 
-class PopulatorTestCase(unittest.TestCase):
+class SeederTestCase(unittest.TestCase):
 
     def test_population(self):
         generator = fake
-        populator = Populator(generator)
+        populator = Seeder(generator)
         populator.add_entity(Game, 10)
         self.assertEqual(len(populator.execute()[Game]), 10)
 
@@ -68,7 +68,7 @@ class PopulatorTestCase(unittest.TestCase):
             return name
         title_fake.count = 0
 
-        populator = Populator(generator)
+        populator = Seeder(generator)
         populator.add_entity( Game, 10, {
             'title': title_fake
         } )
@@ -77,7 +77,7 @@ class PopulatorTestCase(unittest.TestCase):
     def test_formatter(self):
         generator = fake
 
-        populator = Populator( generator )
+        populator = Seeder( generator )
 
         populator.add_entity(Game,5)
         populator.add_entity(Player, 10, {
@@ -96,7 +96,7 @@ class PopulatorTestCase(unittest.TestCase):
 
 class APIDjangoFakerTestCase(unittest.TestCase):
 
-    def test_django_faker_singleton(self):
+    def test_django_seed_singleton(self):
         self.assertEqual( DjangoFaker() , DjangoFaker() )
         self.assertIs( DjangoFaker() , DjangoFaker() )
 
