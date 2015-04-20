@@ -2,12 +2,16 @@ from faker import Faker
 from django_faker.populator import Populator
 from django_faker import Faker as DjangoFaker
 
+import random
+
 from django.db import models
 from django.utils import unittest
 from django.template import Context, TemplateSyntaxError
 from django.template import Template
 
+
 fake = Faker()
+
 
 class Game(models.Model):
 
@@ -31,36 +35,31 @@ class Player(models.Model):
 
 
 class Action(models.Model):
-
     ACTION_FIRE='fire'
     ACTION_MOVE='move'
     ACTION_STOP='stop'
-
 
     ACTIONS = (
         (ACTION_FIRE,'Fire'),
         (ACTION_MOVE,'Move'),
         (ACTION_STOP,'Stop'),
-        )
+    )
 
     name= models.CharField(max_length=4, choices=ACTIONS)
     executed_at= models.DateTimeField()
-
     actor= models.ForeignKey(Player,related_name='actions', null=True)
     target= models.ForeignKey(Player, related_name='enemy_actions+', null=True)
 
 
 class PopulatorTestCase(unittest.TestCase):
 
-    def testPopulation(self):
-
+    def test_population(self):
         generator = fake
         populator = Populator(generator)
-        populator.addEntity( Game, 10 )
+        populator.add_entity(Game, 10)
         self.assertEqual(len(populator.execute()[Game]), 10)
 
-    def testGuesser(self):
-
+    def test_guesser(self):
         generator = fake
 
         def title_fake(arg):
@@ -70,23 +69,22 @@ class PopulatorTestCase(unittest.TestCase):
         title_fake.count = 0
 
         populator = Populator(generator)
-        populator.addEntity( Game, 10, {
+        populator.add_entity( Game, 10, {
             'title': title_fake
         } )
         self.assertEqual(len(populator.execute()[Game]), title_fake.count)
 
-    def testFormatter(self):
-
+    def test_formatter(self):
         generator = fake
 
         populator = Populator( generator )
 
-        populator.addEntity(Game,5)
-        populator.addEntity(Player, 10, {
-            'score': lambda x: fake.randomInt(0,1000),
+        populator.add_entity(Game,5)
+        populator.add_entity(Player, 10, {
+            'score': lambda x: random.randint(0,1000),
             'nickname': lambda x: fake.email()
         })
-        populator.addEntity(Action,30)
+        populator.add_entity(Action,30)
 
         insertedPks = populator.execute()
 
@@ -98,26 +96,23 @@ class PopulatorTestCase(unittest.TestCase):
 
 class APIDjangoFakerTestCase(unittest.TestCase):
 
-    def testDjangoFakerSingleton(self):
-
+    def test_django_faker_singleton(self):
         self.assertEqual( DjangoFaker() , DjangoFaker() )
         self.assertIs( DjangoFaker() , DjangoFaker() )
 
-    def testFakerCacheGenerator(self):
+    def test_faker_cache_generator(self):
+        self.assertEqual( DjangoFaker().generator(), DjangoFaker().generator() )
+        self.assertIs( DjangoFaker().generator(), DjangoFaker().generator() )
+        self.assertIs( DjangoFaker().generator(codename='default'), DjangoFaker().generator(codename='default') )
 
-        self.assertEqual( DjangoFaker().getGenerator(), DjangoFaker().getGenerator() )
-        self.assertIs( DjangoFaker().getGenerator(), DjangoFaker().getGenerator() )
-        self.assertIs( DjangoFaker().getGenerator(codename='default'), DjangoFaker().getGenerator(codename='default') )
+        self.assertEqual( DjangoFaker().generator(locale='it_IT'), DjangoFaker().generator(locale='it_IT') )
+        self.assertIs( DjangoFaker().generator(locale='it_IT'), DjangoFaker().generator(locale='it_IT') )
 
-        self.assertEqual( DjangoFaker().getGenerator(locale='it_IT'), DjangoFaker().getGenerator(locale='it_IT') )
-        self.assertIs( DjangoFaker().getGenerator(locale='it_IT'), DjangoFaker().getGenerator(locale='it_IT') )
+    def test_faker_cache_populator(self):
+        self.assertEqual( DjangoFaker().populator(), DjangoFaker().populator() )
+        self.assertIs( DjangoFaker().populator(), DjangoFaker().populator() )
+        self.assertIs( DjangoFaker().populator().generator, DjangoFaker().populator().generator )
 
-    def testFakerCachePopulator(self):
-
-        self.assertEqual( DjangoFaker().getPopulator(), DjangoFaker().getPopulator() )
-        self.assertIs( DjangoFaker().getPopulator(), DjangoFaker().getPopulator() )
-        self.assertIs( DjangoFaker().getPopulator().generator, DjangoFaker().getPopulator().generator )
-
-        self.assertEqual( DjangoFaker().getPopulator(locale='it_IT'), DjangoFaker().getPopulator(locale='it_IT') )
-        self.assertIs( DjangoFaker().getPopulator(locale='it_IT'), DjangoFaker().getPopulator(locale='it_IT') )
+        self.assertEqual( DjangoFaker().populator(locale='it_IT'), DjangoFaker().populator(locale='it_IT') )
+        self.assertIs( DjangoFaker().populator(locale='it_IT'), DjangoFaker().populator(locale='it_IT') )
         

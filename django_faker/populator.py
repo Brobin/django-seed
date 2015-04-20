@@ -12,15 +12,15 @@ class FieldTypeGuesser(object):
         """
         self.generator = generator
 
-    def guessFormat(self, field):
+    def guess_format(self, field):
 
         generator = self.generator
         if isinstance(field, BooleanField): return lambda x: generator.boolean()
         if isinstance(field, NullBooleanField): return lambda x: generator.nullBoolean()
         if isinstance(field, DecimalField): return lambda x: generator.pydecimal(rightDigits=field.decimal_places)
-        if isinstance(field, SmallIntegerField): return lambda x: generator.randomInt(0,65535)
-        if isinstance(field, IntegerField): return lambda x: generator.randomInt(0,4294967295)
-        if isinstance(field, BigIntegerField): return lambda x: generator.randomInt(0,18446744073709551615)
+        if isinstance(field, SmallIntegerField): return lambda x: random.randint(0,65535)
+        if isinstance(field, IntegerField): return lambda x: random.randint(0,4294967295)
+        if isinstance(field, BigIntegerField): return lambda x: random.randint(0,18446744073709551615)
         if isinstance(field, FloatField): return lambda x: generator.pyfloat()
         if isinstance(field, CharField):
             if field.choices:
@@ -51,7 +51,7 @@ class ModelPopulator(object):
         self.model = model
         self.fieldFormatters = {}
 
-    def guessFieldFormatters(self, generator):
+    def guess_field_formatters(self, generator):
 
         formatters = {}
         model = self.model
@@ -72,7 +72,7 @@ class ModelPopulator(object):
                             # try to retrieve random object from relatedModel
                             relatedModel.objects.order_by('?')[0]
                         except IndexError:
-                            raise Exception('Relation "%s.%s" with "%s" cannot be null, check order of addEntity list' % (
+                            raise Exception('Relation "%s.%s" with "%s" cannot be null, check order of add_entity list' % (
                                 field.model.__name__, field.name, relatedModel.__name__,
                             ))
                     return None
@@ -83,12 +83,12 @@ class ModelPopulator(object):
             if isinstance(field, AutoField):
                 continue
 
-            formatter = nameGuesser.guessFormat(fieldName)
+            formatter = nameGuesser.guess_format(fieldName)
             if formatter:
                 formatters[fieldName] = formatter
                 continue
 
-            formatter = fieldTypeGuesser.guessFormat(field)
+            formatter = fieldTypeGuesser.guess_format(field)
             if formatter:
                 formatters[fieldName] = formatter
                 continue
@@ -121,7 +121,7 @@ class Populator(object):
         self.orders = []
 
 
-    def addEntity(self, model, number, customFieldFormatters=None):
+    def add_entity(self, model, number, customFieldFormatters=None):
         """
         Add an order for the generation of $number records for $entity.
 
@@ -135,7 +135,7 @@ class Populator(object):
         if not isinstance(model, ModelPopulator):
             model = ModelPopulator(model)
 
-        model.fieldFormatters = model.guessFieldFormatters( self.generator )
+        model.fieldFormatters = model.guess_field_formatters( self.generator )
         if customFieldFormatters:
             model.fieldFormatters.update(customFieldFormatters)
 
@@ -152,19 +152,19 @@ class Populator(object):
         :rtype: A list of the inserted PKs
         """
         if not using:
-            using = self.getConnection()
+            using = self.get_connection()
 
-        insertedEntities = {}
+        inserted_entities = {}
         for klass in self.orders:
             number = self.quantities[klass]
             if klass not in insertedEntities:
                 insertedEntities[klass] = []
             for i in range(0,number):
-                    insertedEntities[klass].append( self.entities[klass].execute(using, insertedEntities) )
+                    inserted_entities[klass].append( self.entities[klass].execute(using, inserted_entities) )
 
-        return insertedEntities
+        return inserted_entities
 
-    def getConnection(self):
+    def get_connection(self):
         """
         use the first connection available
         :rtype: Connection
@@ -173,9 +173,6 @@ class Populator(object):
         klass = self.entities.keys()
         if not klass:
             raise AttributeError('No class found from entities. Did you add entities to the Populator ?')
-        klass = klass[0]
+        klass = list(klass)[0]
 
         return klass.objects._db
-
-
-
