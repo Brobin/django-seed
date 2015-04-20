@@ -1,14 +1,14 @@
-Django-faker
+Django-seed
 ============
 
-*Django-faker* uses `faker`_ to generate test data for Django models and templates.
+*Django-seed* uses the `faker`_ to generate test data for your Django models. This has been forked from `django_faker`_ because it is no longer in development and does not have support for Python 3
 
 How to use
 ----------
 
 To install Django-faker you can use pip::
 
-    pip install django-faker
+    pip install git+https://github.com/brobin/django-seed.git
 
 
 Configuration
@@ -19,11 +19,11 @@ In django application `settings.py`::
     INSTALLED_APPS = (
 
         # ...
-        'django_faker',
+        'django_seed',
     )
 
 
-Populating Django Models
+Seeding Django Models
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 *Django-faker* provides an adapter for Django Models, for easy population of test databases.
@@ -83,3 +83,4 @@ or if you have 'django_faker' in INSTALLED_APPS:
 
 
 .. _faker: https://www.github.com/joke2k/faker/
+.. _django_faker: https://www.github.com/joke2k/django-faker/
