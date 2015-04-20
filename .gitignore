@@ -10,3 +10,6 @@
 *.egg-info/*
 docs/_build/*
 dist/*
+djedi
+manage.py
+db.sqlite3
