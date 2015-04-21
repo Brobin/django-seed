@@ -1,7 +1,7 @@
 import random
 from django_seed.guessers import NameGuesser, FieldTypeGuesser
 from django_seed.exceptions import SeederException
-from django.db.models.fields import *
+from django.db.models.fields import AutoField
 from django.db.models import ForeignKey, ManyToManyField, OneToOneField
 
 
@@ -22,7 +22,6 @@ class ModelSeeder(object):
         field_type_guesser = FieldTypeGuesser(faker)
 
         for field in model._meta.fields:
-        #            yield field.name, getattr(self, field.name)
             field_name = field.name
             if isinstance(field, (ForeignKey, ManyToManyField, OneToOneField)):
                 related_model = field.rel.to
@@ -64,8 +63,10 @@ class ModelSeeder(object):
 
         for field, format in self.field_formatters.items():
             if format:
-                value = format(inserted_entities) if hasattr(format,'__call__') else format
-                setattr(obj, field, value)
+                if hasattr(format,'__call__'):
+                    setattr(obj, field, format(inserted_entities))
+                else:
+                    setattr(obj, field, format)
 
         obj.save(using=using)
 
@@ -100,7 +101,7 @@ class Seeder(object):
         if not isinstance(model, ModelSeeder):
             model = ModelSeeder(model)
 
-        model.field_formatters = model.guess_field_formatters( self.faker )
+        model.field_formatters = model.guess_field_formatters(self.faker)
         if customFieldFormatters:
             model.field_formatters.update(customFieldFormatters)
 

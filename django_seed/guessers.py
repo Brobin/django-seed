@@ -19,7 +19,7 @@ class NameGuesser(object):
         if name in ('first_name', 'firstname', 'first'): return lambda x: faker.first_name()
         if name in ('last_name', 'lastname', 'last'): return lambda x: faker.last_name()
 
-        if name in ('username','login','nickname', 'name'): return lambda x:faker.user_name()
+        if name in ('username','login','nickname'): return lambda x:faker.user_name()
         if name in ('email','email_address'): return lambda x:faker.email()
         if name in ('phone_number','phonenumber','phone'): return lambda x:faker.phone_number()
         if name == 'address' : return lambda x:faker.address()
@@ -60,7 +60,7 @@ class FieldTypeGuesser(object):
 
         if isinstance(field, CharField):
             if field.choices:
-                return lambda x: random.choice(field.choices)
+                return lambda x: random.choice(field.choices)[0]
             return lambda x: faker.text(field.max_length) if field.max_length >= 5 else faker.word()
         if isinstance(field, TextField): return lambda x: faker.text()
 
