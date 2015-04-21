@@ -45,10 +45,10 @@ class Action(models.Model):
         (ACTION_STOP,'Stop'),
    )
 
-    name= models.CharField(max_length=4, choices=ACTIONS)
-    executed_at= models.DateTimeField()
-    actor= models.ForeignKey(Player,related_name='actions', null=True)
-    target= models.ForeignKey(Player, related_name='enemy_actions+', null=True)
+    name = models.CharField(max_length=4, choices=ACTIONS)
+    executed_at = models.DateTimeField()
+    actor = models.ForeignKey(Player,related_name='actions', null=True)
+    target = models.ForeignKey(Player, related_name='enemy_actions+', null=True)
 
 
 class SeederTestCase(unittest.TestCase):

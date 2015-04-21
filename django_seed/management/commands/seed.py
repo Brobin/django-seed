@@ -12,7 +12,7 @@ class Command(AppCommand):
     args = "[appname ...]"
 
     option_list = AppCommand.option_list + (
-        make_option('-n', dest='number', default=10,
+        make_option('--number', dest='number', default=10,
                     help='number of each model to seed'),
     )
 
@@ -23,7 +23,7 @@ class Command(AppCommand):
         try:
             number = int(options['number'])
         except ValueError:
-            raise SeederCommandError('The value of -n (number) must be an integer')
+            raise SeederCommandError('The value of --number must be an integer')
 
         seeder = Seed.seeder()
 

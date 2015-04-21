@@ -36,7 +36,7 @@ Ex] Seed 15 of each model for the app `api`:
 
 .. code-block:: bash
 
-    $ python manage.py seed api -n 15
+    $ python manage.py seed api --number=15
     
 That's it! Now you have 15 of each model seeded into your database.
 
