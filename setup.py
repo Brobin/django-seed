@@ -15,7 +15,7 @@ setup(
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Information Technology',
         'License :: OSI Approved :: MIT License',
-        'Framework :: Django'
+        'Framework :: Django',
         'Framework :: Django :: 1.7',
         'Framework :: Django :: 1.8',
         'Natural Language :: English',
