@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 import sys
-
+import django
 from django.conf import settings
+from django.test.utils import get_runner
+
 
 def configure():
-
     from faker import Faker
-
     fake = Faker()
 
     settings.configure(
@@ -17,22 +17,22 @@ def configure():
                 }
         },
         INSTALLED_APPS=(
-            'django_faker',
+            'django_seed',
             ),
         SITE_ID=1,
         SECRET_KEY=fake.sha1(),
     )
 
-if not settings.configured: configure()
 
-
-from django.test.utils import get_runner
+if not settings.configured: 
+    configure()
 
 
 def runtests():
+    django.setup()
     TestRunner = get_runner(settings)
     test_runner = TestRunner(verbosity=1, interactive=True, failfast=False)
-    failures = test_runner.run_tests(['django_faker', ])
+    failures = test_runner.run_tests(['django_seed', ])
     sys.exit(failures)
 
 
