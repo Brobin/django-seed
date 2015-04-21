@@ -43,7 +43,7 @@ class Action(models.Model):
         (ACTION_FIRE,'Fire'),
         (ACTION_MOVE,'Move'),
         (ACTION_STOP,'Stop'),
-    )
+   )
 
     name= models.CharField(max_length=4, choices=ACTIONS)
     executed_at= models.DateTimeField()
@@ -55,9 +55,9 @@ class SeederTestCase(unittest.TestCase):
 
     def test_population(self):
         generator = fake
-        populator = Seeder(generator)
-        populator.add_entity(Game, 10)
-        self.assertEqual(len(populator.execute()[Game]), 10)
+        seeder = Seeder(generator)
+        seeder.add_entity(Game, 10)
+        self.assertEqual(len(seeder.execute()[Game]), 10)
 
     def test_guesser(self):
         generator = fake
@@ -68,51 +68,51 @@ class SeederTestCase(unittest.TestCase):
             return name
         title_fake.count = 0
 
-        populator = Seeder(generator)
-        populator.add_entity( Game, 10, {
+        seeder = Seeder(generator)
+        seeder.add_entity(Game, 10, {
             'title': title_fake
-        } )
-        self.assertEqual(len(populator.execute()[Game]), title_fake.count)
+        })
+        self.assertEqual(len(seeder.execute()[Game]), title_fake.count)
 
     def test_formatter(self):
         generator = fake
 
-        populator = Seeder( generator )
+        seeder = Seeder(generator)
 
-        populator.add_entity(Game,5)
-        populator.add_entity(Player, 10, {
+        seeder.add_entity(Game,5)
+        seeder.add_entity(Player, 10, {
             'score': lambda x: random.randint(0,1000),
             'nickname': lambda x: fake.email()
         })
-        populator.add_entity(Action,30)
+        seeder.add_entity(Action,30)
 
-        insertedPks = populator.execute()
+        insertedPks = seeder.execute()
 
-        self.assertTrue( len(insertedPks[Game]) == 5 )
-        self.assertTrue( len(insertedPks[Player]) == 10 )
+        self.assertTrue(len(insertedPks[Game]) == 5)
+        self.assertTrue(len(insertedPks[Player]) == 10)
 
-        self.assertTrue( any([0 <= p.score <= 1000 and '@' in p.nickname for p in Player.objects.all() ]) )
+        self.assertTrue(any([0 <= p.score <= 1000 and '@' in p.nickname for p in Player.objects.all() ]))
 
 
 class APIDjangoFakerTestCase(unittest.TestCase):
 
     def test_django_seed_singleton(self):
-        self.assertEqual( DjangoFaker() , DjangoFaker() )
-        self.assertIs( DjangoFaker() , DjangoFaker() )
+        self.assertEqual(DjangoFaker() , DjangoFaker())
+        self.assertIs(DjangoFaker() , DjangoFaker())
 
     def test_faker_cache_generator(self):
-        self.assertEqual( DjangoFaker().generator(), DjangoFaker().generator() )
-        self.assertIs( DjangoFaker().generator(), DjangoFaker().generator() )
-        self.assertIs( DjangoFaker().generator(codename='default'), DjangoFaker().generator(codename='default') )
+        self.assertEqual(DjangoFaker().generator(), DjangoFaker().generator())
+        self.assertIs(DjangoFaker().generator(), DjangoFaker().generator())
+        self.assertIs(DjangoFaker().generator(codename='default'), DjangoFaker().generator(codename='default'))
 
-        self.assertEqual( DjangoFaker().generator(locale='it_IT'), DjangoFaker().generator(locale='it_IT') )
-        self.assertIs( DjangoFaker().generator(locale='it_IT'), DjangoFaker().generator(locale='it_IT') )
+        self.assertEqual(DjangoFaker().generator(locale='it_IT'), DjangoFaker().generator(locale='it_IT'))
+        self.assertIs(DjangoFaker().generator(locale='it_IT'), DjangoFaker().generator(locale='it_IT'))
 
-    def test_faker_cache_populator(self):
-        self.assertEqual( DjangoFaker().populator(), DjangoFaker().populator() )
-        self.assertIs( DjangoFaker().populator(), DjangoFaker().populator() )
-        self.assertIs( DjangoFaker().populator().generator, DjangoFaker().populator().generator )
+    def test_faker_cache_seeder(self):
+        self.assertEqual(DjangoFaker().seeder(), DjangoFaker().seeder())
+        self.assertIs(DjangoFaker().seeder(), DjangoFaker().seeder())
+        self.assertIs(DjangoFaker().seeder().generator, DjangoFaker().seeder().generator)
 
-        self.assertEqual( DjangoFaker().populator(locale='it_IT'), DjangoFaker().populator(locale='it_IT') )
-        self.assertIs( DjangoFaker().populator(locale='it_IT'), DjangoFaker().populator(locale='it_IT') )
+        self.assertEqual(DjangoFaker().seeder(locale='it_IT'), DjangoFaker().seeder(locale='it_IT'))
+        self.assertIs(DjangoFaker().seeder(locale='it_IT'), DjangoFaker().seeder(locale='it_IT'))
         

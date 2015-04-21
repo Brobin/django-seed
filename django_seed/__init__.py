@@ -8,7 +8,7 @@ __version__ = '0.2'
 
 class Faker(object):
     instance = None
-    populators = {}
+    seeders = {}
     generators = {}
 
     @classmethod
@@ -38,12 +38,12 @@ class Faker(object):
         return cls.generators[codename]
 
     @classmethod
-    def populator(cls, locale=None):
+    def seeder(cls, locale=None):
         codename = cls.codename(locale)
-        if codename not in cls.populators:
+        if codename not in cls.seeders:
             generator = cls.generators.get(codename,  None) or cls.getGenerator(codename=codename)
-            from django_faker import populator
-            cls.populators[codename] = populator.Populator(generator)
+            from django_seed import seeder
+            cls.seeders[codename] = seeder.Seeder(generator)
 
-        return cls.populators[codename]
+        return cls.seeders[codename]
 
