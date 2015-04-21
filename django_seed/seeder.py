@@ -45,10 +45,11 @@ class ModelSeeder(object):
             if isinstance(field, AutoField):
                 continue
 
-            formatter = name_guesser.guess_format(field_name)
-            if formatter:
-                formatters[field_name] = formatter
-                continue
+            if not field.choices:
+                formatter = name_guesser.guess_format(field_name)
+                if formatter:
+                    formatters[field_name] = formatter
+                    continue
 
             formatter = field_type_guesser.guess_format(field)
             if formatter:
