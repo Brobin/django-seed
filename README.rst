@@ -28,7 +28,7 @@ In django application `settings.py`::
 Seeding Models with manage.py
 ------------------------------
 
-**Note:** *This is currnetly in development and may not work correctly with ForeignKey relationships!*
+**Note:** *This is currently in development and may not work correctly with ForeignKey relationships!*
 
 One improvement that django-seed has over django-faker is the ability to seed your database from the command line. Using the `manage.py seed` command, you can do this automagically.
 
@@ -98,7 +98,7 @@ or if you have 'django_faker' in INSTALLED_APPS:
     
 License
 -------
-MIT. Seed LICENSE for more details.
+MIT. See LICENSE for more details.
 
 
 .. _faker: https://www.github.com/joke2k/faker/
