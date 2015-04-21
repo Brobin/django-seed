@@ -1,6 +1,6 @@
 
 from django.db.models.fields import *
-from django.db.models import ForeignKey, ManyToManyField, OneToOneField, ImageField
+from django.db.models import *
 import random
 import re
 
@@ -49,15 +49,6 @@ class FieldTypeGuesser(object):
         if isinstance(field, IntegerField): return lambda x: random.randint(0,4294967295)
         if isinstance(field, BigIntegerField): return lambda x: random.randint(0,18446744073709551615)
         if isinstance(field, FloatField): return lambda x: random.random()
-        if isinstance(field, CharField):
-            if field.choices:
-                return lambda x: random.choice(field.choices)
-            return lambda x: faker.text(field.max_length) if field.max_length >= 5 else faker.word()
-        if isinstance(field, TextField): return lambda x: faker.text()
-
-        if isinstance(field, DateTimeField): return lambda x: faker.date_time()
-        if isinstance(field, DateField): return lambda x: faker.date()
-        if isinstance(field, TimeField): return lambda x: faker.time()
 
         if isinstance(field, URLField): return lambda x: faker.uri()
         if isinstance(field, SlugField): return lambda x: faker.uri_page()
@@ -67,4 +58,13 @@ class FieldTypeGuesser(object):
         if isinstance(field, EmailField): return lambda x: faker.email()
         if isinstance(field, ImageField): return lambda x: None
 
+        if isinstance(field, CharField):
+            if field.choices:
+                return lambda x: random.choice(field.choices)
+            return lambda x: faker.text(field.max_length) if field.max_length >= 5 else faker.word()
+        if isinstance(field, TextField): return lambda x: faker.text()
+
+        if isinstance(field, DateTimeField): return lambda x: faker.date_time()
+        if isinstance(field, DateField): return lambda x: faker.date()
+        if isinstance(field, TimeField): return lambda x: faker.time()
         raise AttributeError(field)
