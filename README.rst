@@ -5,6 +5,7 @@ Django-seed
 
 Not only will this version allow you to write code to generate models, it will allow you to seed your database with one simple command!
 
+----------
 How to use
 ----------
 
@@ -14,7 +15,7 @@ To install django-seed you can use pip::
 
 
 Configuration
-~~~~~~~~~~~~~
+-------------
 
 In django application `settings.py`::
 
@@ -25,7 +26,9 @@ In django application `settings.py`::
 
 
 Seeding Models with manage.py
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+------------------------------
+
+**Note:** *This is currnetly in development and may not work correctly with ForeignKey relationships!*
 
 One improvement that django-seed has over django-faker is the ability to seed your database from the command line. Using the `manage.py seed` command, you can do this automagically.
 
@@ -34,10 +37,12 @@ Ex] Seed 15 of each model for the app `api`:
 .. code-block:: bash
 
     $ python manage.py seed api -n 15
+    
+That's it! Now you have 15 of each model seeded into your database.
 
 
 Seeding Models with code
-~~~~~~~~~~~~~~~~~~~~~~~~
+------------------------
 
 *django-seed* provides methods to easily seed test databases for your Django models. To seed your database with Model instances, create a `Faker` instance and use the `add_entity` method.
 
@@ -90,6 +95,10 @@ or if you have 'django_faker' in INSTALLED_APPS:
 .. code-block:: bash
 
     $ python manage.py test django_faker
+    
+License
+-------
+MIT. Seed LICENSE for more details.
 
 
 .. _faker: https://www.github.com/joke2k/faker/
