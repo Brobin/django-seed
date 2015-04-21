@@ -1,46 +1,7 @@
 import random
-from django_seed.guessers import Name
+from django_seed.guessers import Name, FieldTypeGuesser
 from django.db.models.fields import *
 from django.db.models import ForeignKey, ManyToManyField, OneToOneField, ImageField
-
-
-class FieldTypeGuesser(object):
-
-    def __init__(self, generator):
-        """
-        :param generator: Generator
-        """
-        self.generator = generator
-
-    def guess_format(self, field):
-
-        generator = self.generator
-        if isinstance(field, BooleanField): return lambda x: generator.boolean()
-        if isinstance(field, NullBooleanField): return lambda x: generator.nullBoolean()
-        if isinstance(field, DecimalField): return lambda x: generator.pydecimal(rightDigits=field.decimal_places)
-        if isinstance(field, SmallIntegerField): return lambda x: random.randint(0,65535)
-        if isinstance(field, IntegerField): return lambda x: random.randint(0,4294967295)
-        if isinstance(field, BigIntegerField): return lambda x: random.randint(0,18446744073709551615)
-        if isinstance(field, FloatField): return lambda x: generator.pyfloat()
-        if isinstance(field, CharField):
-            if field.choices:
-                return lambda x: generator.randomElement(field.choices)[0]
-            return lambda x: generator.text(field.max_length) if field.max_length >= 5 else generator.word()
-        if isinstance(field, TextField): return lambda x: generator.text()
-
-        if isinstance(field, DateTimeField): return lambda x: generator.dateTime()
-        if isinstance(field, DateField): return lambda x: generator.date()
-        if isinstance(field, TimeField): return lambda x: generator.time()
-
-        if isinstance(field, URLField): return lambda x: generator.uri()
-        if isinstance(field, SlugField): return lambda x: generator.slug()
-        if isinstance(field, IPAddressField):
-            protocol = generator.randomElements(['ipv4','ipv6'])
-            return lambda x: getattr(generator,protocol)()
-        if isinstance(field, EmailField): return lambda x: generator.email()
-        if isinstance(field, ImageField): return lambda x: None
-
-        raise AttributeError(field)
 
 
 class ModelSeeder(object):
