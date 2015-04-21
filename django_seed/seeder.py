@@ -35,8 +35,8 @@ class FieldTypeGuesser(object):
         if isinstance(field, URLField): return lambda x: generator.uri()
         if isinstance(field, SlugField): return lambda x: generator.slug()
         if isinstance(field, IPAddressField):
-            protocolIp = generator.randomElements(['ipv4','ipv6'])
-            return lambda x: getattr(generator,protocolIp)()
+            protocol = generator.randomElements(['ipv4','ipv6'])
+            return lambda x: getattr(generator,protocol)()
         if isinstance(field, EmailField): return lambda x: generator.email()
         if isinstance(field, ImageField): return lambda x: None
 
@@ -61,7 +61,7 @@ class ModelSeeder(object):
         for field in model._meta.fields:
         #            yield field.name, getattr(self, field.name)
             field_name = field.name
-            if isinstance(field, (ForeignKey,ManyToManyField,OneToOneField)):
+            if isinstance(field, (ForeignKey, ManyToManyField, OneToOneField)):
                 related_model = field.rel.to
 
                 def build_relation(inserted):
