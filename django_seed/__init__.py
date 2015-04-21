@@ -28,22 +28,20 @@ class Seed(object):
 
     @classmethod
     def faker(cls, locale=None, codename=None):
-        codename = codename or cls.codename(locale)
-        if codename not in cls.fakers:
-            from faker import Faker as Faker
-            # initialize with faker.faker.Generator instance
-            # and remember in cache
-            cls.fakers[codename] = Faker(locale)
-            cls.fakers[codename].seed(random.randint(1,10000))
-        return cls.fakers[codename]
+        code = codename or cls.codename(locale)
+        if code not in cls.fakers:
+            from faker import Faker
+            cls.fakers[code] = Faker(locale)
+            cls.fakers[code].seed(random.randint(1,10000))
+        return cls.fakers[code]
 
     @classmethod
     def seeder(cls, locale=None):
-        codename = cls.codename(locale)
-        if codename not in cls.seeders:
-            faker = cls.fakers.get(codename,  None) or cls.faker(codename=codename)
+        code = cls.codename(locale)
+        if code not in cls.seeders:
+            faker = cls.fakers.get(code, None) or cls.faker(codename=code)
             from django_seed import seeder
-            cls.seeders[codename] = seeder.Seeder(faker)
+            cls.seeders[code] = seeder.Seeder(faker)
 
-        return cls.seeders[codename]
+        return cls.seeders[code]
 

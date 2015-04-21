@@ -2,7 +2,7 @@ import random
 from django_seed.guessers import NameGuesser, FieldTypeGuesser
 from django_seed.exceptions import SeederException
 from django.db.models.fields import *
-from django.db.models import ForeignKey, ManyToManyField, OneToOneField, ImageField
+from django.db.models import ForeignKey, ManyToManyField, OneToOneField
 
 
 class ModelSeeder(object):
@@ -29,15 +29,15 @@ class ModelSeeder(object):
 
                 def build_relation(inserted):
                     if related_model in inserted and inserted[related_model]:
-                        return related_model.objects.get(pk=random.choice(inserted[related_model]))
+                        pk = random.choice(inserted[related_model])
+                        return related_model.objects.get(pk=pk)
                     if not field.null:
                         try :
                             # try to retrieve random object from related_model
                             related_model.objects.order_by('?')[0]
                         except IndexError:
-                            raise SeederException('Relation "%s.%s" with "%s" cannot be null, check order of add_entity list' % (
-                                field.model.__name__, field.name, related_model.__name__,
-                            ))
+                            message = 'Field {} cannot be null'.format(field)
+                            raise SeederException(message)
                     return None
 
                 formatters[field_name] = build_relation
@@ -88,11 +88,13 @@ class Seeder(object):
         """
         Add an order for the generation of $number records for $entity.
 
-        :param model: mixed A Django Model classname, or a faker.orm.django.EntitySeeder instance
+        :param model: mixed A Django Model classname,
+        or a faker.orm.django.EntitySeeder instance
         :type model: Model
         :param number: int The number of entities to seed
         :type number: integer
-        :param customFieldFormatters: optional dict with field as key and callable as value
+        :param customFieldFormatters: optional dict with field as key and 
+        callable as value
         :type customFieldFormatters: dict or None
         """
         if not isinstance(model, ModelSeeder):
@@ -123,7 +125,8 @@ class Seeder(object):
             if klass not in inserted_entities:
                 inserted_entities[klass] = []
             for i in range(0,number):
-                    inserted_entities[klass].append(self.entities[klass].execute(using, inserted_entities))
+                entity = self.entities[klass].execute(using, inserted_entities)
+                inserted_entities[klass].append(entity)
 
         return inserted_entities
 
@@ -135,7 +138,8 @@ class Seeder(object):
 
         klass = self.entities.keys()
         if not klass:
-            raise AttributeError('No class found from entities. Did you add entities to the Seeder ?')
+            message = 'No classed found. Did you add entities to the Seeder?'
+            raise SeederException(message)
         klass = list(klass)[0]
 
         return klass.objects._db
