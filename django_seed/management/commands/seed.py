@@ -7,7 +7,7 @@ import django
 
 
 class Command(AppCommand):
-    help = 'Generates DRF API Views and Serializers for a Django app'
+    help = 'Seed your Django database with fake data'
 
     args = "[appname ...]"
 

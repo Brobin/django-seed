@@ -6,15 +6,12 @@ import random
 
 from django.db import models
 from django.utils import unittest
-from django.template import Context, TemplateSyntaxError
-from django.template import Template
 
 
 fake = Faker()
 
 
 class Game(models.Model):
-
     title= models.CharField(max_length=200)
     slug= models.SlugField(max_length=200)
     description= models.TextField()
@@ -26,11 +23,9 @@ class Game(models.Model):
 
 
 class Player(models.Model):
-
     nickname= models.CharField(max_length=100)
     score= models.BigIntegerField()
     last_login_at= models.DateTimeField()
-
     game= models.ForeignKey(Game)
 
 
@@ -38,13 +33,11 @@ class Action(models.Model):
     ACTION_FIRE='fire'
     ACTION_MOVE='move'
     ACTION_STOP='stop'
-
     ACTIONS = (
         (ACTION_FIRE,'Fire'),
         (ACTION_MOVE,'Move'),
         (ACTION_STOP,'Stop'),
-   )
-
+    )
     name = models.CharField(max_length=4, choices=ACTIONS)
     executed_at = models.DateTimeField()
     actor = models.ForeignKey(Player,related_name='actions', null=True)
@@ -61,13 +54,11 @@ class SeederTestCase(unittest.TestCase):
 
     def test_guesser(self):
         faker = fake
-
         def title_fake(arg):
             title_fake.count += 1
             name = faker.company()
             return name
         title_fake.count = 0
-
         seeder = Seeder(faker)
         seeder.add_entity(Game, 10, {
             'title': title_fake
@@ -80,18 +71,14 @@ class SeederTestCase(unittest.TestCase):
 
     def test_formatter(self):
         faker = fake
-
         seeder = Seeder(faker)
-
         seeder.add_entity(Game,5)
         seeder.add_entity(Player, 10, {
             'score': lambda x: random.randint(0,1000),
             'nickname': lambda x: fake.email()
         })
         seeder.add_entity(Action,30)
-
         inserted_pks = seeder.execute()
-
         self.assertTrue(len(inserted_pks[Game]) == 5)
         self.assertTrue(len(inserted_pks[Player]) == 10)
 
