@@ -1,33 +1,22 @@
 import os
-from setuptools import setup, find_packages
-
-
-def read_file(filename):
-    """Read a file into a string"""
-    path = os.path.abspath(os.path.dirname(__file__))
-    filepath = os.path.join(path, filename)
-    try:
-        return open(filepath).read()
-    except IOError:
-        return ''
-
+from setuptools import setup
 
 setup(
-    name='django-faker',
+    name='django-seed',
     version=__import__('django_faker').__version__,
-    author='joke2k',
-    author_email='joke2k@gmail.com',
-    packages=find_packages(),
+    author='Tobin Brown',
+    author_email='tobin@brobin.me',
+    packages=['django_seed'],
     include_package_data=True,
-    url='http://github.com/joke2k/django-faker',
+    url='http://github.com/brobin/django-seed',
     license='MIT',
-    description=u' '.join(__import__('django_faker').__doc__.splitlines()).strip(),
+    description='Seed your Django projcet with fake data',
     classifiers=[
-        # Get strings from http://pypi.python.org/pypi?%3Aaction=list_classifiers
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Information Technology',
         'Programming Language :: Python',
         'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 3',
         'Topic :: Software Development :: Libraries :: Python Modules',
         'Topic :: Software Development :: Testing',
         'Topic :: Software Development :: Widget Sets',
@@ -37,8 +26,8 @@ setup(
     ],
     keywords='faker fixtures data test django',
     long_description=read_file('README.rst'),
-    install_requires=['django','fake-factory==0.2'],
-    tests_require=['django','fake-factory==0.2'],
+    install_requires=['django','fake-factory==0.5.0'],
+    tests_require=['django','fake-factory==0.5.0'],
     test_suite="runtests.runtests",
     zip_safe=False,
 )
