@@ -1,5 +1,6 @@
 import random
 from django_seed.guessers import Name, FieldTypeGuesser
+from django_seed.exceptions import SeederException
 from django.db.models.fields import *
 from django.db.models import ForeignKey, ManyToManyField, OneToOneField, ImageField
 
@@ -34,7 +35,7 @@ class ModelSeeder(object):
                             # try to retrieve random object from related_model
                             related_model.objects.order_by('?')[0]
                         except IndexError:
-                            raise Exception('Relation "%s.%s" with "%s" cannot be null, check order of add_entity list' % (
+                            raise SeederException('Relation "%s.%s" with "%s" cannot be null, check order of add_entity list' % (
                                 field.model.__name__, field.name, related_model.__name__,
                             ))
                     return None

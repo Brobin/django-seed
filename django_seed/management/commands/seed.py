@@ -1,6 +1,7 @@
 
-from django.core.management.base import AppCommand, CommandError
+from django.core.management.base import AppCommand
 from django_seed import Faker
+from django_seed.exceptions import SeederCommandError
 from optparse import make_option
 import django
 
@@ -17,12 +18,12 @@ class Command(AppCommand):
 
     def handle_app_config(self, app_config, **options):
         if app_config.models_module is None:
-            raise CommandError('You must provide an app to generate an API')
+            raise SeederCommandError('You must provide an app to seed')
 
         try:
             number = int(options['number'])
         except ValueError:
-            raise CommandError('The value of -n (number) must be an integer')
+            raise SeederCommandError('The value of -n (number) must be an integer')
 
         seeder = Faker.seeder()
 

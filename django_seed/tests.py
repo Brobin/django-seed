@@ -96,7 +96,7 @@ class SeederTestCase(unittest.TestCase):
         self.assertTrue(len(inserted_pks[Player]) == 10)
 
         players = Player.objects.all()
-        self.assertTrue(any([self.valid_player(p) for p in players]))
+        self.assertTrue(all([self.valid_player(p) for p in players]))
 
 
 class APIDjangoSeederTestCase(unittest.TestCase):
