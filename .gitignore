@@ -11,6 +11,7 @@
 docs/_build/*
 dist/*
 seed
+testing
 manage.py
 db.sqlite3
 

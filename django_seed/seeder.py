@@ -5,6 +5,7 @@ from django.db.models import ForeignKey, ManyToManyField, OneToOneField, ImageFi
 
 
 class ModelSeeder(object):
+
     def __init__(self, model):
         """
         :param model: Generator
