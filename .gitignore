@@ -10,7 +10,7 @@
 *.egg-info/*
 docs/_build/*
 dist/*
-djedi
+seed
 manage.py
 db.sqlite3
 
