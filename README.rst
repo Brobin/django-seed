@@ -128,7 +128,7 @@ MIT. See LICENSE for more details.
 .. _django_faker: https://www.github.com/joke2k/django-faker/
 
 .. |travis| image:: https://img.shields.io/travis/Brobin/django-seed.svg?style=flat-square
-    :target: http://travix-ci.org/Brobin/django-seed
+    :target: http://travis-ci.org/Brobin/django-seed
     :alt: Travix Build
 
 .. |license| image:: https://img.shields.io/github/license/Brobin/django-seed.svg?style=flat-square
