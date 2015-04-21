@@ -6,7 +6,7 @@ Django-seed
 How to use
 ----------
 
-To install Django-faker you can use pip::
+To install django-seed you can use pip::
 
     pip install git+https://github.com/brobin/django-seed.git
 
@@ -17,8 +17,7 @@ Configuration
 In django application `settings.py`::
 
     INSTALLED_APPS = (
-
-        # ...
+        ...
         'django_seed',
     )
 
@@ -26,30 +25,25 @@ In django application `settings.py`::
 Seeding Django Models
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-*Django-faker* provides an adapter for Django Models, for easy population of test databases.
-To populate with Model instances, create a new Populator class,
-then list the class and number of all of Models that must be generated. To launch the actual data population,
-call `execute()` method.
+*django-seed* provides methods to easily seed test databases for your Django models. To seed your database with Model instances, create a
 
-Here is an example showing how to populate 5 `Game` and 10 `Player` objects::
+Here is an example showing how to seed 5 `Game` and 10 `Player` objects:
 
-    from django_faker import Faker
-    # this Populator is only a function thats return a django_faker.populator.Populator instance
-    # correctly initialized with a faker.generator.Generator instance, configured as above
-    populator = Faker.getPopulator()
+.. code-block:: python
+
+    from django_seed import Faker
+
+    seeder = Faker.seeder()
 
     from myapp.models import Game, Player
-    populator.add_entity(Game,5)
-    populator.add_entity(Player,10)
+    seeder.add_entity(Game, 5)
+    seeder.add_entity(Player, 10)
 
-    inserted_pks = populator.execute()
+    inserted_pks = seeder.execute()
 
-The populator uses name and column type guessers to populate each column with relevant data.
-For instance, Django-faker populates a column named `first_name` using the `firstName` formatter, and a column with
-a `datetime` instance using the `dateTime`.
-The resulting entities are therefore coherent. If Django-faker misinterprets a column name, you can still specify a custom
-function to be used for populating a particular column, using the third argument to `addEntity()`::
+The seeder uses the name and column type to populate the Model with relevant data. If django-seed misinterprets a column name, you can still specify a custom function to be used for populating a particular column, using the third argument to `addEntity()`:
 
+.. code-block:: python
 
     populator.add_entity(Player, 10, {
         'score':    lambda x: random.randint(0,1000),
@@ -57,17 +51,15 @@ function to be used for populating a particular column, using the third argument
     })
     populator.execute()
 
-Of course, Django-faker does not populate autoincremented primary keys.
-In addition, `django_faker.populator.Populator.execute()` returns the list of inserted PKs, indexed by class::
+jango-seed does not populate autoincremented primary keys, instead `django_seed.seeder.Seeder.execute()` returns the list of inserted PKs, indexed by class::
 
-    print insertedPks
+.. code-block:: python
+
+    print inserted_pks
     {
         <class 'faker.django.tests.Player'>: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
         <class 'faker.django.tests.Game'>: [1, 2, 3, 4, 5]
     }
-
-In the previous example, the `Player` and `Game` models share a relationship. Since `Game` entities are populated first,
-Faker is smart enough to relate the populated `Player` entities to one of populated `Game` entities.
 
 
 Running the Tests

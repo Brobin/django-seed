@@ -41,7 +41,7 @@ class Faker(object):
     def seeder(cls, locale=None):
         codename = cls.codename(locale)
         if codename not in cls.seeders:
-            generator = cls.generators.get(codename,  None) or cls.getGenerator(codename=codename)
+            generator = cls.generators.get(codename,  None) or cls.generator(codename=codename)
             from django_seed import seeder
             cls.seeders[codename] = seeder.Seeder(generator)
 
