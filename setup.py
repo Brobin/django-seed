@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name='django-seed',
-    version=__import__('django_faker').__version__,
+    version=__import__('django_seed').__version__,
     author='Tobin Brown',
     author_email='tobin@brobin.me',
     packages=['django_seed'],
