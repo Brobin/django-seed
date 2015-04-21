@@ -3,6 +3,8 @@ Django-seed
 
 *Django-seed* uses the `faker`_ to generate test data for your Django models. This has been forked from `django_faker`_ because it is no longer in development and does not have support for Python 3
 
+Not only will this version allow you to write code to generate models, it will allow you to seed your database with one simple command!
+
 How to use
 ----------
 
@@ -22,7 +24,19 @@ In django application `settings.py`::
     )
 
 
-Seeding Django Models
+Seeding Models with manage.py
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+One improvement that django-seed has over django-faker is the ability to seed your database from the command line. Using the `manage.py seed` command, you can do this automagically.
+
+Ex] Seed 15 of each model for the app `api`:
+
+.. code-block:: bash
+
+    $ python manage.py seed api -n 15
+
+
+Seeding Models with code
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 *django-seed* provides methods to easily seed test databases for your Django models. To seed your database with Model instances, create a `Faker` instance and use the `add_entity` method.
