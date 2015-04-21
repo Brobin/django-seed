@@ -25,9 +25,9 @@ In django application `settings.py`::
 Seeding Django Models
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-*django-seed* provides methods to easily seed test databases for your Django models. To seed your database with Model instances, create a
+*django-seed* provides methods to easily seed test databases for your Django models. To seed your database with Model instances, create a `Faker` instance and use the `add_entity` method.
 
-Here is an example showing how to seed 5 `Game` and 10 `Player` objects:
+Ex: seeding 5 `Game` and 10 `Player` objects:
 
 .. code-block:: python
 
@@ -41,7 +41,7 @@ Here is an example showing how to seed 5 `Game` and 10 `Player` objects:
 
     inserted_pks = seeder.execute()
 
-The seeder uses the name and column type to populate the Model with relevant data. If django-seed misinterprets a column name, you can still specify a custom function to be used for populating a particular column, using the third argument to `addEntity()`:
+The seeder uses the name and column type to populate the Model with relevant data. If django-seed misinterprets a column name, you can still specify a custom function to be used for populating a particular column, using the third argument to `add_entity()`:
 
 .. code-block:: python
 
@@ -51,7 +51,7 @@ The seeder uses the name and column type to populate the Model with relevant dat
     })
     populator.execute()
 
-jango-seed does not populate autoincremented primary keys, instead `django_seed.seeder.Seeder.execute()` returns the list of inserted PKs, indexed by class::
+jango-seed does not populate autoincremented primary keys, instead `django_seed.seeder.Seeder.execute()` returns the list of inserted PKs, indexed by class:
 
 .. code-block:: python
 
@@ -67,9 +67,13 @@ Running the Tests
 
 Run django tests in a django environment:
 
+.. code-block:: bash
+
     $ python runtests.py
 
 or if you have 'django_faker' in INSTALLED_APPS:
+
+.. code-block:: bash
 
     $ python manage.py test django_faker
 
