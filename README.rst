@@ -8,7 +8,7 @@ Not only will this version allow you to write code to generate models, it will a
 
 ---------------
 
-|python| |travis| |license|
+|python| |pypi| |travis| |license|
 
 ---------------
 
