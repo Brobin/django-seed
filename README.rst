@@ -8,6 +8,10 @@ Not only will this version allow you to write code to generate models, it will a
 
 ---------------
 
+|python| |travis| |license|
+
+---------------
+
 * `Installation`_
 * `Configuration`_
 * `Usage`_
@@ -122,3 +126,14 @@ MIT. See LICENSE for more details.
 
 .. _faker: https://www.github.com/joke2k/faker/
 .. _django_faker: https://www.github.com/joke2k/django-faker/
+
+.. |travis| image:: https://img.shields.io/travis/Brobin/django-seed.svg?style=flat-square
+    :target: http://travix-ci.org/Brobin/django-seed
+    :alt: Travix Build
+
+.. |license| image:: https://img.shields.io/github/license/Brobin/django-seed.svg?style=flat-square
+    :target: https://github.com/Brobin/django-seed/blob/master/LICENSE
+    :alt: MIT License
+
+.. |python| image:: https://img.shields.io/badge/python-2.7, 3.x-blue.svg?style=flat-square
+    :alt: Python 2.7, 3.x
