@@ -1,38 +1,53 @@
+===========
 Django-seed
-============
+===========
 
-*Django-seed* uses the `faker`_ to generate test data for your Django models. This has been forked from `django_faker`_ because it is no longer in development and does not have support for Python 3
+*Django-seed* uses the `faker`_ library to generate test data for your Django models. This has been forked from `django_faker`_ because it is no longer in development and does not have support for Python 3
 
-Not only will this version allow you to write code to generate models, it will allow you to seed your database with one simple command!
+Not only will this version allow you to write code to generate models, it will allow you to seed your database with one simple ``manage.py`` command!
 
-----------
-How to use
-----------
+---------------
+
+* `Installation`_
+* `Configuration`_
+* `Usage`_
+* `Using with command`_
+* `USing with code`_
+* `Tests`_
+* `License`_
+
+---------------
+
+------------
+Installation
+------------
 
 To install django-seed you can use pip::
 
     pip install git+https://github.com/brobin/django-seed.git
 
 
+-------------
 Configuration
 -------------
 
-In django application `settings.py`::
+In django application ``settings.py``::
 
     INSTALLED_APPS = (
         ...
         'django_seed',
     )
 
+-----
+Usage
+-----
 
-Seeding Models with manage.py
-------------------------------
+Using with command
+------------------
 
-**Note:** *This is currently in development and may not work correctly with ForeignKey relationships!*
+One improvement that django-seed has over django-faker is the ability to seed your database from the command line. Using the ``manage.py seed`` command, you can do this automagically.
 
-One improvement that django-seed has over django-faker is the ability to seed your database from the command line. Using the `manage.py seed` command, you can do this automagically.
-
-Ex] Seed 15 of each model for the app `api`:
+Ex] Seed 15 of each model for the app ``api``:
 
 .. code-block:: bash
 
@@ -41,18 +56,18 @@ Ex] Seed 15 of each model for the app `api`:
 That's it! Now you have 15 of each model seeded into your database.
 
 
-Seeding Models with code
-------------------------
+Using with code
+----------------
 
-*django-seed* provides methods to easily seed test databases for your Django models. To seed your database with Model instances, create a `Faker` instance and use the `add_entity` method.
+*django-seed* provides methods to easily seed test databases for your Django models. To seed your database with Model instances, create a ``Seed`` instance and use the `add_entity` method.
 
-Ex: seeding 5 `Game` and 10 `Player` objects:
+Ex: seeding 5 ``Game`` and 10 ``Player`` objects:
 
 .. code-block:: python
 
-    from django_seed import Faker
+    from django_seed import Seed
 
-    seeder = Faker.seeder()
+    seeder = Seed.seeder()
 
     from myapp.models import Game, Player
     seeder.add_entity(Game, 5)
@@ -60,17 +75,17 @@ Ex: seeding 5 `Game` and 10 `Player` objects:
 
     inserted_pks = seeder.execute()
 
-The seeder uses the name and column type to populate the Model with relevant data. If django-seed misinterprets a column name, you can still specify a custom function to be used for populating a particular column, using the third argument to `add_entity()`:
+The seeder uses the name and column type to populate the Model with relevant data. If django-seed misinterprets a column name, you can still specify a custom function to be used for populating a particular column, addming a third argument to ``add_entity()``:
 
 .. code-block:: python
 
-    populator.add_entity(Player, 10, {
+    seeder.add_entity(Player, 10, {
         'score':    lambda x: random.randint(0,1000),
-        'nickname': lambda x: populator.generator.email(),
+        'nickname': lambda x: seeder.faker.email(),
     })
-    populator.execute()
+    seeder.execute()
 
-jango-seed does not populate autoincremented primary keys, instead `django_seed.seeder.Seeder.execute()` returns the list of inserted PKs, indexed by class:
+Django-seed does not populate autoincremented primary keys, instead ``django_seed.seeder.Seeder.execute()`` returns the list of inserted PKs, indexed by class:
 
 .. code-block:: python
 
@@ -81,8 +96,9 @@ jango-seed does not populate autoincremented primary keys, instead `django_seed.
     }
 
 
-Running the Tests
------------------
+-----
+Tests
+-----
 
 Run django tests in a django environment:
 
@@ -95,9 +111,12 @@ or if you have 'django_faker' in INSTALLED_APPS:
 .. code-block:: bash
 
     $ python manage.py test django_faker
-    
+  
+
+-------  
 License
 -------
+
 MIT. See LICENSE for more details.
 
 
