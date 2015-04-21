@@ -1,6 +1,6 @@
 from faker import Faker
 from django_seed.seeder import Seeder
-from django_seed import Faker as DjangoSeeder
+from django_seed import Seed
 
 import random
 
@@ -54,21 +54,21 @@ class Action(models.Model):
 class SeederTestCase(unittest.TestCase):
 
     def test_population(self):
-        generator = fake
-        seeder = Seeder(generator)
+        faker = fake
+        seeder = Seeder(faker)
         seeder.add_entity(Game, 10)
         self.assertEqual(len(seeder.execute()[Game]), 10)
 
     def test_guesser(self):
-        generator = fake
+        faker = fake
 
         def title_fake(arg):
             title_fake.count += 1
-            name = generator.company()
+            name = faker.company()
             return name
         title_fake.count = 0
 
-        seeder = Seeder(generator)
+        seeder = Seeder(faker)
         seeder.add_entity(Game, 10, {
             'title': title_fake
         })
@@ -79,9 +79,9 @@ class SeederTestCase(unittest.TestCase):
         return 0 <= p.score <= 1000 and '@' in p.nickname
 
     def test_formatter(self):
-        generator = fake
+        faker = fake
 
-        seeder = Seeder(generator)
+        seeder = Seeder(faker)
 
         seeder.add_entity(Game,5)
         seeder.add_entity(Player, 10, {
@@ -99,27 +99,27 @@ class SeederTestCase(unittest.TestCase):
         self.assertTrue(all([self.valid_player(p) for p in players]))
 
 
-class APIDjangoSeederTestCase(unittest.TestCase):
+class APISeedTestCase(unittest.TestCase):
 
     def setUp(self):
-        self.seed1 = DjangoSeeder()
-        self.seed2 = DjangoSeeder()
+        self.seed1 = Seed()
+        self.seed2 = Seed()
 
     def test_django_seed_singleton(self):
         self.assertEqual(self.seed1, self.seed2)
         self.assertIs(self.seed1, self.seed1)
 
-    def test_faker_cache_generator(self):
-        gen1 = self.seed1.generator()
-        gen2 = self.seed2.generator()
+    def test_faker_cache_faker(self):
+        gen1 = self.seed1.faker()
+        gen2 = self.seed2.faker()
         self.assertIs(gen1, gen2)
 
-        gen1 = self.seed1.generator(codename='default')
-        gen2 = self.seed2.generator(codename='default')
+        gen1 = self.seed1.faker(codename='default')
+        gen2 = self.seed2.faker(codename='default')
         self.assertIs(gen1, gen2)
 
-        gen1 = self.seed1.generator(locale='it_IT')
-        gen2 = self.seed2.generator(locale='it_IT')
+        gen1 = self.seed1.faker(locale='it_IT')
+        gen2 = self.seed2.faker(locale='it_IT')
         self.assertIs(gen1, gen2)
 
     def test_faker_cache_seeder(self):
@@ -127,8 +127,8 @@ class APIDjangoSeederTestCase(unittest.TestCase):
         seeder2 = self.seed2.seeder()
         self.assertIs(seeder1, seeder2)
 
-        gen1 = seeder1.generator
-        gen2 = seeder2.generator
+        gen1 = seeder1.faker
+        gen2 = seeder2.faker
         self.assertIs(gen1, gen2)
 
         seeder1 = self.seed1.seeder(locale='it_IT')

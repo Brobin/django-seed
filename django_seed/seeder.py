@@ -1,5 +1,5 @@
 import random
-from django_seed.guessers import Name, FieldTypeGuesser
+from django_seed.guessers import NameGuesser, FieldTypeGuesser
 from django_seed.exceptions import SeederException
 from django.db.models.fields import *
 from django.db.models import ForeignKey, ManyToManyField, OneToOneField, ImageField
@@ -14,12 +14,12 @@ class ModelSeeder(object):
         self.model = model
         self.field_formatters = {}
 
-    def guess_field_formatters(self, generator):
+    def guess_field_formatters(self, faker):
 
         formatters = {}
         model = self.model
-        name_guesser = Name(generator)
-        fieldTypeGuesser = FieldTypeGuesser(generator)
+        name_guesser = NameGuesser(faker)
+        field_type_guesser = FieldTypeGuesser(faker)
 
         for field in model._meta.fields:
         #            yield field.name, getattr(self, field.name)
@@ -51,7 +51,7 @@ class ModelSeeder(object):
                 formatters[field_name] = formatter
                 continue
 
-            formatter = fieldTypeGuesser.guess_format(field)
+            formatter = field_type_guesser.guess_format(field)
             if formatter:
                 formatters[field_name] = formatter
                 continue
@@ -74,11 +74,11 @@ class ModelSeeder(object):
 
 class Seeder(object):
 
-    def __init__(self, generator):
+    def __init__(self, faker):
         """
-        :param generator: Generator
+        :param faker: Generator
         """
-        self.generator = generator
+        self.faker = faker
         self.entities = {}
         self.quantities = {}
         self.orders = []
@@ -98,7 +98,7 @@ class Seeder(object):
         if not isinstance(model, ModelSeeder):
             model = ModelSeeder(model)
 
-        model.field_formatters = model.guess_field_formatters( self.generator )
+        model.field_formatters = model.guess_field_formatters( self.faker )
         if customFieldFormatters:
             model.field_formatters.update(customFieldFormatters)
 
@@ -123,7 +123,7 @@ class Seeder(object):
             if klass not in inserted_entities:
                 inserted_entities[klass] = []
             for i in range(0,number):
-                    inserted_entities[klass].append( self.entities[klass].execute(using, inserted_entities) )
+                    inserted_entities[klass].append(self.entities[klass].execute(using, inserted_entities))
 
         return inserted_entities
 

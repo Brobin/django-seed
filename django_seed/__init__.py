@@ -6,15 +6,15 @@ import random
 __version__ = '0.2'
 
 
-class Faker(object):
+class Seed(object):
     instance = None
     seeders = {}
-    generators = {}
+    fakers = {}
 
     @classmethod
     def __new__(cls, *args, **kwargs):
         if cls.instance is None:
-            cls.instance = super(Faker, cls).__new__(*args, **kwargs)
+            cls.instance = super(Seed, cls).__new__(*args, **kwargs)
         return cls.instance
 
     def __init__(self):
@@ -27,23 +27,23 @@ class Faker(object):
         return codename
 
     @classmethod
-    def generator(cls, locale=None, codename=None):
+    def faker(cls, locale=None, codename=None):
         codename = codename or cls.codename(locale)
-        if codename not in cls.generators:
-            from faker import Faker as FakerGenerator
-            # initialize with faker.generator.Generator instance
+        if codename not in cls.fakers:
+            from faker import Faker as Faker
+            # initialize with faker.faker.Generator instance
             # and remember in cache
-            cls.generators[codename] = FakerGenerator(locale)
-            cls.generators[codename].seed(random.randint(1,10000))
-        return cls.generators[codename]
+            cls.fakers[codename] = Faker(locale)
+            cls.fakers[codename].seed(random.randint(1,10000))
+        return cls.fakers[codename]
 
     @classmethod
     def seeder(cls, locale=None):
         codename = cls.codename(locale)
         if codename not in cls.seeders:
-            generator = cls.generators.get(codename,  None) or cls.generator(codename=codename)
+            faker = cls.fakers.get(codename,  None) or cls.faker(codename=codename)
             from django_seed import seeder
-            cls.seeders[codename] = seeder.Seeder(generator)
+            cls.seeders[codename] = seeder.Seeder(faker)
 
         return cls.seeders[codename]
 

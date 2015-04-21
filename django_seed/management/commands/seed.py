@@ -1,6 +1,6 @@
 
 from django.core.management.base import AppCommand
-from django_seed import Faker
+from django_seed import Seed
 from django_seed.exceptions import SeederCommandError
 from optparse import make_option
 import django
@@ -25,8 +25,9 @@ class Command(AppCommand):
         except ValueError:
             raise SeederCommandError('The value of -n (number) must be an integer')
 
-        seeder = Faker.seeder()
+        seeder = Seed.seeder()
 
+        # don't diplay warnings about non-timezone aware datetimes
         import warnings
         warnings.showwarning = lambda *x: None
 
@@ -34,5 +35,6 @@ class Command(AppCommand):
             seeder.add_entity(model, number)
             print('Seeding %i %ss' % (number, model.__name__))
 
-        seeder.execute()
+        pks = seeder.execute()
+        print(pks)
 
