@@ -28,7 +28,7 @@ Installation
 
 To install django-seed you can use pip::
 
-    pip install git+https://github.com/brobin/django-seed.git
+    pip install django-seed
 
 
 -------------
@@ -127,13 +127,18 @@ MIT. See LICENSE for more details.
 .. _faker: https://www.github.com/joke2k/faker/
 .. _django_faker: https://www.github.com/joke2k/django-faker/
 
+.. |pypi| image:: https://img.shields.io/pypi/v/django-seed.svg?style=flat-square
+    :target: https://pypi.python.org/pypi/django-seed
+    :alt: pypi
+
 .. |travis| image:: https://img.shields.io/travis/Brobin/django-seed.svg?style=flat-square
     :target: http://travis-ci.org/Brobin/django-seed
-    :alt: Travix Build
+    :alt: Travis Build
 
 .. |license| image:: https://img.shields.io/github/license/Brobin/django-seed.svg?style=flat-square
     :target: https://github.com/Brobin/django-seed/blob/master/LICENSE
     :alt: MIT License
 
 .. |python| image:: https://img.shields.io/badge/python-2.7, 3.x-blue.svg?style=flat-square
+    :target: https://pypi.python.org/pypi/django-seed
     :alt: Python 2.7, 3.x
