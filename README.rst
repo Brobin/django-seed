@@ -16,7 +16,7 @@ Not only will this version allow you to write code to generate models, it will a
 * `Configuration`_
 * `Usage`_
 * `Using with command`_
-* `USing with code`_
+* `Using with code`_
 * `Tests`_
 * `License`_
 
@@ -110,11 +110,11 @@ Run django tests in a django environment:
 
     $ python runtests.py
 
-or if you have 'django_faker' in INSTALLED_APPS:
+or if you have ``django_seed`` in INSTALLED_APPS:
 
 .. code-block:: bash
 
-    $ python manage.py test django_faker
+    $ python manage.py test django_seed
   
 
 -------  
