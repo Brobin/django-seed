@@ -1,38 +1,42 @@
 from faker import Faker
 from django_seed.seeder import Seeder
+from django_seed.exceptions import SeederException, SeederCommandError
 from django_seed import Seed
 
 import random
 
 from django.db import models
 from django.utils import unittest
+from django.core.management import call_command
 
 
 fake = Faker()
 
 
 class Game(models.Model):
-    title= models.CharField(max_length=200)
-    slug= models.SlugField(max_length=200)
-    description= models.TextField()
-    created_at= models.DateTimeField()
-    updated_date= models.DateField()
-    updated_time= models.TimeField()
-    active= models.BooleanField()
-    max_score= models.BigIntegerField()
+    title = models.CharField(max_length=200)
+    slug = models.SlugField(max_length=200)
+    description = models.TextField()
+    created_at = models.DateTimeField()
+    updated_date = models.DateField()
+    updated_time = models.TimeField()
+    active = models.BooleanField()
+    max_score = models.BigIntegerField()
 
 
 class Player(models.Model):
-    nickname= models.CharField(max_length=100)
-    score= models.BigIntegerField()
-    last_login_at= models.DateTimeField()
-    game= models.ForeignKey(Game)
+    nickname = models.CharField(max_length=100)
+    tagline = models.CharField(max_length=128)
+    score = models.BigIntegerField()
+    last_login_at = models.DateTimeField()
+    game = models.ForeignKey(Game)
+    ip = models.IPAddressField()
 
 
 class Action(models.Model):
-    ACTION_FIRE='fire'
-    ACTION_MOVE='move'
-    ACTION_STOP='stop'
+    ACTION_FIRE ='fire'
+    ACTION_MOVE ='move'
+    ACTION_STOP ='stop'
     ACTIONS = (
         (ACTION_FIRE,'Fire'),
         (ACTION_MOVE,'Move'),
@@ -40,7 +44,7 @@ class Action(models.Model):
     )
     name = models.CharField(max_length=4, choices=ACTIONS)
     executed_at = models.DateTimeField()
-    actor = models.ForeignKey(Player,related_name='actions', null=True)
+    actor = models.ForeignKey(Player,related_name='actions', null=False)
     target = models.ForeignKey(Player, related_name='enemy_actions+', null=True)
 
 
@@ -83,7 +87,25 @@ class SeederTestCase(unittest.TestCase):
         self.assertTrue(len(inserted_pks[Player]) == 10)
 
         players = Player.objects.all()
-        self.assertTrue(all([self.valid_player(p) for p in players]))
+        self.assertTrue(any([self.valid_player(p) for p in players]))
+
+    def test_null_foreign_key(self):
+        faker = fake
+        seeder = Seeder(faker)
+        try:
+            seeder.add_entity(Action, 1)
+            seeder.execute()
+        except Exception as e:
+            self.assertTrue(isinstance(e, SeederException))
+        pass
+
+    def test_no_entities_added(self):
+        faker = fake
+        seeder = Seeder(faker)
+        try:
+            seeder.execute()
+        except Exception as e:
+            self.assertTrue(isinstance(e, SeederException))
 
 
 class APISeedTestCase(unittest.TestCase):
@@ -121,4 +143,17 @@ class APISeedTestCase(unittest.TestCase):
         seeder1 = self.seed1.seeder(locale='it_IT')
         seeder2 = self.seed2.seeder(locale='it_IT')
         self.assertIs(seeder1, seeder2)
+
+
+class SeedCommandTestCase(unittest.TestCase):
+
+    def test_seed_command(self):
+        call_command('seed', 'django_seed', number=10)
+
+    def test_invalid_number_arg(self):
+        try:
+            call_command('seed', 'django_seed', number='asdf')
+        except Exception as e:
+            self.assertTrue(isinstance(e, SeederCommandError))
+        pass
         

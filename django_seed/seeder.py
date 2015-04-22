@@ -30,14 +30,9 @@ class ModelSeeder(object):
                     if related_model in inserted and inserted[related_model]:
                         pk = random.choice(inserted[related_model])
                         return related_model.objects.get(pk=pk)
-                    if not field.null:
-                        try :
-                            # try to retrieve random object from related_model
-                            related_model.objects.order_by('?')[0]
-                        except IndexError:
-                            message = 'Field {} cannot be null'.format(field)
-                            raise SeederException(message)
-                    return None
+                    else:
+                        message = 'Field {} cannot be null'.format(field)
+                        raise SeederException(message)
 
                 formatters[field_name] = build_relation
                 continue

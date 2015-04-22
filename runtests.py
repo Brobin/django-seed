@@ -14,11 +14,17 @@ def configure():
             'default': {
                 'ENGINE': 'django.db.backends.sqlite3',
                 'NAME': ':memory:',
-                }
+            }
         },
         INSTALLED_APPS=(
             'django_seed',
-            ),
+            'django_nose',
+        ),
+        TEST_RUNNER = 'django_nose.NoseTestSuiteRunner',
+        NOSE_ARGS = [
+            '--with-coverage',
+            '--cover-package=django_seed',
+        ],
         SITE_ID=1,
         SECRET_KEY=fake.sha1(),
     )

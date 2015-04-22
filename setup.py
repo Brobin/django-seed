@@ -10,7 +10,7 @@ setup(
     include_package_data=True,
     url='http://github.com/brobin/django-seed',
     license='MIT',
-    description='Seed your Django projcet with fake data',
+    description='Seed your Django project with fake data',
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Information Technology',
@@ -33,7 +33,7 @@ setup(
     keywords='faker fixtures data test django seed',
     long_description=open('README.rst', 'r').read(),
     install_requires=['django>=1.7','fake-factory>=0.5.0'],
-    tests_require=['django>=1.7','fake-factory>=0.5.0'],
+    tests_require=['django>=1.7','fake-factory>=0.5.0', 'coverage', 'django-nose'],
     test_suite="runtests.runtests",
     zip_safe=False,
 )
