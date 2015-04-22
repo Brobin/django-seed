@@ -11,6 +11,6 @@ install:
   - pip install -q Django==$DJANGO --use-mirrors
   - pip install coverage
   - pip install -e git://github.com/django-nose/django-nose.git#egg=django-nose
-  - python setup.py install
+  - pip install -q -e . --use-mirrors
 script:
   - python runtests.py
