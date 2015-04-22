@@ -9,6 +9,8 @@ env:
   - DJANGO=1.8
 install:
   - pip install -q Django==$DJANGO --use-mirrors
+  - pip install coverage
+  - pip install -e git://github.com/django-nose/django-nose.git#egg=django-nose
   - pip install -q -e . --use-mirrors
 script:
   - python runtests.py
