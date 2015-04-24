@@ -3,7 +3,7 @@ from django.conf import settings
 import random
 
 
-__version__ = '0.1.1'
+__version__ = '0.1.2'
 
 
 class Seed(object):
