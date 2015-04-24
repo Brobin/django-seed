@@ -69,7 +69,7 @@ class FieldTypeGuesser(object):
         if isinstance(field, TextField): return lambda x: faker.text()
 
         if isinstance(field, DurationField):
-            return lambda x: timedelta(seconds=random.randint(0, int(time)))
+            return lambda x: timedelta(seconds=random.randint(0, int(time.time())))
         if isinstance(field, DateTimeField): return lambda x: faker.date_time()
         if isinstance(field, DateField): return lambda x: faker.date()
         if isinstance(field, TimeField): return lambda x: faker.time()

@@ -44,6 +44,7 @@ class Action(models.Model):
     )
     name = models.CharField(max_length=4, choices=ACTIONS)
     executed_at = models.DateTimeField()
+    duration = models.DurationField()
     actor = models.ForeignKey(Player,related_name='actions', null=False)
     target = models.ForeignKey(Player, related_name='enemy_actions+', null=True)
 
