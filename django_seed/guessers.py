@@ -1,6 +1,8 @@
 
 from django.db.models.fields import *
 from django.db.models import *
+from datetime import timedelta
+import time
 import random
 import re
 
@@ -54,9 +56,9 @@ class FieldTypeGuesser(object):
 
         if isinstance(field, URLField): return lambda x: faker.uri()
         if isinstance(field, SlugField): return lambda x: faker.uri_page()
-        if isinstance(field, IPAddressField):
+        if isinstance(field, IPAddressField) or isinstance(field, GenericIPAddressField):
             protocol = random.choice(['ipv4','ipv6'])
-            return lambda x: getattr(faker,protocol)()
+            return lambda x: getattr(faker, protocol)()
         if isinstance(field, EmailField): return lambda x: faker.email()
         if isinstance(field, ImageField): return lambda x: None
 
@@ -66,6 +68,8 @@ class FieldTypeGuesser(object):
             return lambda x: faker.text(field.max_length) if field.max_length >= 5 else faker.word()
         if isinstance(field, TextField): return lambda x: faker.text()
 
+        if isinstance(field, DurationField):
+            return lambda x: timedelta(seconds=random.randint(0, int(time)))
         if isinstance(field, DateTimeField): return lambda x: faker.date_time()
         if isinstance(field, DateField): return lambda x: faker.date()
         if isinstance(field, TimeField): return lambda x: faker.time()
