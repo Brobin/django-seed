@@ -3,6 +3,7 @@ from django.db.models.fields import *
 from django.db.models import *
 from datetime import timedelta
 import time
+import django
 import random
 import re
 
@@ -68,7 +69,7 @@ class FieldTypeGuesser(object):
             return lambda x: faker.text(field.max_length) if field.max_length >= 5 else faker.word()
         if isinstance(field, TextField): return lambda x: faker.text()
 
-        if isinstance(field, DurationField):
+        if django.VERSION[1] >= 8 and isinstance(field, DurationField):
             return lambda x: timedelta(seconds=random.randint(0, int(time.time())))
         if isinstance(field, DateTimeField): return lambda x: faker.date_time()
         if isinstance(field, DateField): return lambda x: faker.date()

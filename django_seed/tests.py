@@ -4,6 +4,7 @@ from django_seed.exceptions import SeederException, SeederCommandError
 from django_seed import Seed
 
 import random
+import django
 
 from django.db import models
 from django.utils import unittest
@@ -44,7 +45,8 @@ class Action(models.Model):
     )
     name = models.CharField(max_length=4, choices=ACTIONS)
     executed_at = models.DateTimeField()
-    duration = models.DurationField()
+    if django.VERSION[1] >= 8:
+        duration = models.DurationField()
     actor = models.ForeignKey(Player,related_name='actions', null=False)
     target = models.ForeignKey(Player, related_name='enemy_actions+', null=True)
 
