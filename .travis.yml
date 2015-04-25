@@ -12,5 +12,8 @@ install:
   - pip install coverage
   - pip install -e git://github.com/django-nose/django-nose.git#egg=django-nose
   - pip install -q -e . --use-mirrors
+  - pip install coveralls
 script:
   - python runtests.py
+after_success:
+  - coveralls
