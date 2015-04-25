@@ -47,6 +47,7 @@ class Action(models.Model):
     executed_at = models.DateTimeField()
     if django.VERSION[1] >= 8:
         duration = models.DurationField()
+        uuid = models.UUIDField()
     actor = models.ForeignKey(Player,related_name='actions', null=False)
     target = models.ForeignKey(Player, related_name='enemy_actions+', null=True)
 

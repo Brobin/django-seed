@@ -5,6 +5,7 @@ from datetime import timedelta
 import time
 import django
 import random
+import uuid
 import re
 
 
@@ -45,6 +46,13 @@ class FieldTypeGuesser(object):
 
     def guess_format(self, field):
         faker = self.faker
+
+        if django.VERSION[1] == 8:
+            if isinstance(field, DurationField):
+                return lambda x: timedelta(seconds=random.randint(0, int(time.time())))
+            if isinstance(field, UUIDField):
+                return lambda x: uuid.uuid4()
+
         if isinstance(field, BooleanField): return lambda x: faker.boolean()
         if isinstance(field, NullBooleanField): return lambda x: faker.null_boolean()
         if isinstance(field, DecimalField): return lambda x: random.random()
@@ -69,8 +77,6 @@ class FieldTypeGuesser(object):
             return lambda x: faker.text(field.max_length) if field.max_length >= 5 else faker.word()
         if isinstance(field, TextField): return lambda x: faker.text()
 
-        if django.VERSION[1] >= 8 and isinstance(field, DurationField):
-            return lambda x: timedelta(seconds=random.randint(0, int(time.time())))
         if isinstance(field, DateTimeField): return lambda x: faker.date_time()
         if isinstance(field, DateField): return lambda x: faker.date()
         if isinstance(field, TimeField): return lambda x: faker.time()
