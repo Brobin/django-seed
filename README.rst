@@ -2,13 +2,13 @@
 Django-seed
 ===========
 
-*Django-seed* uses the `faker`_ library to generate test data for your Django models. This has been forked from `django_faker`_ because it is no longer in development and does not have support for Python 3
+*Django-seed* uses the `faker`_ library to generate test data for your Django models. This has been "hard-forked" from `django_faker`_ in order to support newer version of Python and Django
 
-Not only will this version allow you to write code to generate models, it will allow you to seed your database with one simple ``manage.py`` command!
+Django-seed allows you to write code to generate models, and seed your database with one simple ``manage.py`` command!
 
 ---------------
 
-|python| |pypi| |travis| |license|
+|python| |pypi| |travis| |coveralls| |license|
 
 ---------------
 
@@ -49,7 +49,7 @@ Usage
 Using with command
 ------------------
 
-One improvement that django-seed has over django-faker is the ability to seed your database from the command line. Using the ``manage.py seed`` command, you can do this automagically.
+With *django-seed*, you can seed your database with test data from the command line using the ``manage.py seed`` command.
 
 Ex] Seed 15 of each model for the app ``api``:
 
@@ -79,7 +79,7 @@ Ex: seeding 5 ``Game`` and 10 ``Player`` objects:
 
     inserted_pks = seeder.execute()
 
-The seeder uses the name and column type to populate the Model with relevant data. If django-seed misinterprets a column name, you can still specify a custom function to be used for populating a particular column, addming a third argument to ``add_entity()``:
+The seeder uses the name and column type to populate the Model with relevant data. If django-seed misinterprets a column name, you can still specify a custom function to be used for populating a particular column, by adding a third argument to ``add_entity()`` method:
 
 .. code-block:: python
 
@@ -89,7 +89,7 @@ The seeder uses the name and column type to populate the Model with relevant dat
     })
     seeder.execute()
 
-Django-seed does not populate autoincremented primary keys, instead ``django_seed.seeder.Seeder.execute()`` returns the list of inserted PKs, indexed by class:
+Django-seed does not populate autoincremented primary keys, instead ``seeder.execute()`` returns the list of inserted PKs, indexed by class:
 
 .. code-block:: python
 
@@ -134,6 +134,10 @@ MIT. See LICENSE for more details.
 .. |travis| image:: https://img.shields.io/travis/Brobin/django-seed.svg?style=flat-square
     :target: http://travis-ci.org/Brobin/django-seed
     :alt: Travis Build
+    
+.. |coveralls| image:: https://img.shields.io/coveralls/Brobin/django-seed.svg?style=flat-square
+    :target: https://coveralls.io/r/Brobin/django-seed
+    :alt: coverage
 
 .. |license| image:: https://img.shields.io/github/license/Brobin/django-seed.svg?style=flat-square
     :target: https://github.com/Brobin/django-seed/blob/master/LICENSE
