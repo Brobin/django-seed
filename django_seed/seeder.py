@@ -15,7 +15,11 @@ class ModelSeeder(object):
         self.field_formatters = {}
 
     def guess_field_formatters(self, faker):
-
+        """
+        Gets the formatter methods for each field using the guessers
+        or related object fields
+        :param faker: Faker factory object
+        """
         formatters = {}
         model = self.model
         name_guesser = NameGuesser(faker)
@@ -54,9 +58,13 @@ class ModelSeeder(object):
         return formatters
 
     def execute(self, using, inserted_entities):
-
+        """
+        Execute the stages entities to inserte
+        :param using:
+        :param inserted_entities:
+        """
         obj = self.model()
-
+        
         for field, format in self.field_formatters.items():
             if format:
                 if hasattr(format,'__call__'):

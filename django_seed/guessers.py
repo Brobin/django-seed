@@ -14,6 +14,10 @@ class NameGuesser(object):
         self.faker = faker
 
     def guess_format(self, name):
+        """
+        Returns a faker method baed on the field's name
+        :param name:
+        """
         name = name.lower()
         faker = self.faker
         if re.findall(r'^is[_A-Z]', name): return lambda x:faker.boolean()
@@ -44,6 +48,10 @@ class FieldTypeGuesser(object):
         self.faker = faker
 
     def guess_format(self, field):
+        """
+        Returns the correct faker function based on the field type
+        :param field:
+        """
         faker = self.faker
         if isinstance(field, BooleanField): return lambda x: faker.boolean()
         if isinstance(field, NullBooleanField): return lambda x: faker.null_boolean()
