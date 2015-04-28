@@ -25,16 +25,18 @@ class Game(models.Model):
     max_score = models.BigIntegerField()
     levels = models.SmallIntegerField()
     likes = models.IntegerField()
+    random_binary = models.BinaryField()
 
 
 class Player(models.Model):
     nickname = models.CharField(max_length=100)
     tagline = models.CharField(max_length=128)
+    avatar = models.FilePathField()
     score = models.BigIntegerField()
     last_login_at = models.DateTimeField()
     game = models.ForeignKey(Game)
     ip = models.IPAddressField()
-    achievements = models.PositiveSmallIntegerField()
+    achievements = models.CommaSeparatedIntegerField(max_length=1000)
     friends = models.PositiveIntegerField()
     balance = models.FloatField()
 
