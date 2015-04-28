@@ -23,6 +23,8 @@ class Game(models.Model):
     updated_time = models.TimeField()
     active = models.BooleanField()
     max_score = models.BigIntegerField()
+    levels = models.SmallIntegerField()
+    likes = models.IntegerField()
 
 
 class Player(models.Model):
@@ -32,6 +34,9 @@ class Player(models.Model):
     last_login_at = models.DateTimeField()
     game = models.ForeignKey(Game)
     ip = models.IPAddressField()
+    achievements = models.PositiveSmallIntegerField()
+    friends = models.PositiveIntegerField()
+    balance = models.FloatField()
 
 
 class Action(models.Model):
