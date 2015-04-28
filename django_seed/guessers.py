@@ -1,11 +1,12 @@
 
 from django.db.models.fields import *
 from django.db.models import *
-from datetime import timedelta
-import time
+
 import django
 import random
 import re
+
+from .providers import Provider
 
 
 class NameGuesser(object):
@@ -46,6 +47,7 @@ class FieldTypeGuesser(object):
         :param faker: Generator
         """
         self.faker = faker
+        self.provider = Provider()
 
     def guess_format(self, field):
         """
@@ -53,15 +55,23 @@ class FieldTypeGuesser(object):
         :param field:
         """
         faker = self.faker
+        provider = self.provider
+
+        if django.VERSION[1] == 8:
+            if isinstance(field, DurationField):
+                return lambda x: provider.duration()
+            if isinstance(field, UUIDField):
+                return lambda x: provider.uuid()
+
         if isinstance(field, BooleanField): return lambda x: faker.boolean()
         if isinstance(field, NullBooleanField): return lambda x: faker.null_boolean()
+        if isinstance(field, PositiveSmallIntegerField): return lambda x: provider.rand_small_int(pos=True)
+        if isinstance(field, SmallIntegerField): return lambda x: provider.rand_small_int()
+        if isinstance(field, BigIntegerField): return lambda x: provider.rand_big_int()
+        if isinstance(field, PositiveIntegerField): return lambda x: provider.rand_int(pos=True)
+        if isinstance(field, IntegerField): return lambda x: provider.rand_int()
+        if isinstance(field, FloatField): return lambda x: provider.rand_float()
         if isinstance(field, DecimalField): return lambda x: random.random()
-        if isinstance(field, PositiveSmallIntegerField): return lambda x: random.randint(0, 65535)
-        if isinstance(field, SmallIntegerField): return lambda x: random.randint(-65535, 65535)
-        if isinstance(field, PositiveIntegerField): return lambda x: random.randint(0, 4294967295)
-        if isinstance(field, IntegerField): return lambda x: random.randint(-4294967295, 4294967295)
-        if isinstance(field, BigIntegerField): return lambda x: random.randint(0, 18446744073709551615)
-        if isinstance(field, FloatField): return lambda x: random.random()
 
         if isinstance(field, URLField): return lambda x: faker.uri()
         if isinstance(field, SlugField): return lambda x: faker.uri_page()
@@ -77,8 +87,6 @@ class FieldTypeGuesser(object):
             return lambda x: faker.text(field.max_length) if field.max_length >= 5 else faker.word()
         if isinstance(field, TextField): return lambda x: faker.text()
 
-        if django.VERSION[1] >= 8 and isinstance(field, DurationField):
-            return lambda x: timedelta(seconds=random.randint(0, int(time.time())))
         if isinstance(field, DateTimeField): return lambda x: faker.date_time()
         if isinstance(field, DateField): return lambda x: faker.date()
         if isinstance(field, TimeField): return lambda x: faker.time()
