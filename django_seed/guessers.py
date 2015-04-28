@@ -43,7 +43,7 @@ class FieldTypeGuesser(object):
         :param faker: Generator
         """
         self.faker = faker
-        self.provider = Provider()
+        self.provider = Provider(self.faker)
 
     def guess_format(self, field):
         faker = self.faker
@@ -71,7 +71,13 @@ class FieldTypeGuesser(object):
             protocol = random.choice(['ipv4','ipv6'])
             return lambda x: getattr(faker, protocol)()
         if isinstance(field, EmailField): return lambda x: faker.email()
+        if isinstance(field, CommaSeparatedIntegerField):
+            return lambda x: provider.comma_sep_ints()
+
+        if isinstance(field, BinaryField): return lambda x: provider.binary()
         if isinstance(field, ImageField): return lambda x: None
+        if isinstance(field, FilePathField): return lambda x: provider.file_name()
+        if isinstance(field, FileField): return lambda x: None
 
         if isinstance(field, CharField):
             if field.choices:
