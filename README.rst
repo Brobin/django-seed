@@ -2,7 +2,7 @@
 Django-seed
 ===========
 
-*Django-seed* uses the `faker`_ library to generate test data for your Django models. This has been "hard-forked" from `django_faker`_ in order to support newer version of Python and Django
+*Django-seed* uses the `faker`_ library to generate test data for your Django models. This has been "hard-forked" from `django_faker`_ in order to support newer versions of Python and Django
 
 Django-seed allows you to write code to generate models, and seed your database with one simple ``manage.py`` command!
 
@@ -26,16 +26,20 @@ Django-seed allows you to write code to generate models, and seed your database 
 Installation
 ------------
 
-To install django-seed you can use pip::
+To install django-seed, use pip::
 
     pip install django-seed
+
+Or to install from source::
+
+    python setup.py install
 
 
 -------------
 Configuration
 -------------
 
-In django application ``settings.py``::
+Add it to your installed apps in ``settings.py``::
 
     INSTALLED_APPS = (
         ...
@@ -63,7 +67,7 @@ That's it! Now you have 15 of each model seeded into your database.
 Using with code
 ----------------
 
-*django-seed* provides methods to easily seed test databases for your Django models. To seed your database with Model instances, create a ``Seed`` instance and use the `add_entity` method.
+*django-seed* provides methods to easily seed test databases for your Django models. To seed your database with Model instances, import ``Seed``, get a ``seeder`` instance, and use the `add_entity` method.
 
 Ex: seeding 5 ``Game`` and 10 ``Player`` objects:
 
@@ -79,7 +83,7 @@ Ex: seeding 5 ``Game`` and 10 ``Player`` objects:
 
     inserted_pks = seeder.execute()
 
-The seeder uses the name and column type to populate the Model with relevant data. If django-seed misinterprets a column name, you can still specify a custom function to be used for populating a particular column, by adding a third argument to ``add_entity()`` method:
+The seeder uses the name and column type to populate the Model with relevant data. If django-seed misinterprets a column name, you can still specify a custom function to be used for populating a particular column, by adding a third argument to the ``add_entity()`` method:
 
 .. code-block:: python
 
@@ -89,7 +93,7 @@ The seeder uses the name and column type to populate the Model with relevant dat
     })
     seeder.execute()
 
-Django-seed does not populate autoincremented primary keys, instead ``seeder.execute()`` returns the list of inserted PKs, indexed by class:
+Django-seed does not populate auto-incremented primary keys, instead ``seeder.execute()`` returns the list of inserted PKs, indexed by class:
 
 .. code-block:: python
 
@@ -104,7 +108,7 @@ Django-seed does not populate autoincremented primary keys, instead ``seeder.exe
 Tests
 -----
 
-Run django tests in a django environment:
+To un django tests in a django environment:
 
 .. code-block:: bash
 
@@ -121,11 +125,12 @@ or if you have ``django_seed`` in INSTALLED_APPS:
 License
 -------
 
-MIT. See LICENSE for more details.
+MIT. See `LICENSE`_ for more details.
 
 
 .. _faker: https://www.github.com/joke2k/faker/
 .. _django_faker: https://www.github.com/joke2k/django-faker/
+.. _LICENSE: https://github.com/Brobin/django-seed/blob/master/LICENSE
 
 .. |pypi| image:: https://img.shields.io/pypi/v/django-seed.svg?style=flat-square
     :target: https://pypi.python.org/pypi/django-seed
