@@ -1,5 +1,5 @@
-===========
-Django-seed
+|seed-logo|
+
 ===========
 
 *Django-seed* uses the `faker`_ library to generate test data for your Django models. This has been "hard-forked" from `django_faker`_ in order to support newer versions of Python and Django
@@ -151,3 +151,6 @@ MIT. See `LICENSE`_ for more details.
 .. |python| image:: https://img.shields.io/badge/python-2.7, 3.x-blue.svg?style=flat-square
     :target: https://pypi.python.org/pypi/django-seed
     :alt: Python 2.7, 3.x
+
+.. |seed-logo| image:: assets/django_seed.png
+    :alt: Django Seed
