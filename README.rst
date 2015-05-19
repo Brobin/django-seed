@@ -50,6 +50,8 @@ Add it to your installed apps in ``settings.py``::
 Usage
 -----
 
+**Note**: When seeding models with Foreign Keys, you need to make sure that those models are seeded first. For example, if a model app `A` has a foreign key to a model in app `B`, you must seed app `B` first.
+
 Using with command
 ------------------
 
