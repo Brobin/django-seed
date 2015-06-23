@@ -6,7 +6,7 @@ setup(
     version=__import__('django_seed').__version__,
     author='Tobin Brown',
     author_email='tobin@brobin.me',
-    packages=['django_seed', 'django_seed.management.commands'],
+    packages=['django_seed', 'django_seed.management', 'django_seed.management.commands'],
     include_package_data=True,
     url='http://github.com/brobin/django-seed',
     license='MIT',
