@@ -8,11 +8,13 @@ from django_seed.toposort import toposort_flatten
 
 class Command(BaseCommand):
     help = 'Seed your Django database with fake data'
-    requires_system_checks = True
 
     def __init__(self, *args, **kwargs):
+        super(Command, self).__init__(*args, **kwargs)
+
         self.include_models = []
         self.exclude_models = []
+
 
     def add_arguments(self, parser):
         parser.add_argument('args', metavar='app_label[.ModelName]', nargs='*',
