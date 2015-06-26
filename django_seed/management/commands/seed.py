@@ -1,11 +1,18 @@
 from django.apps import apps
 from django.core.management.base import BaseCommand
+
 from django_seed import Seed
 from django_seed.exceptions import SeederCommandError
+from django_seed.toposort import toposort_flatten
 
 
 class Command(BaseCommand):
     help = 'Seed your Django database with fake data'
+    requires_system_checks = True
+
+    def __init__(self, *args, **kwargs):
+        self.include_models = []
+        self.exclude_models = []
 
     def add_arguments(self, parser):
         parser.add_argument('args', metavar='app_label[.ModelName]', nargs='*',
@@ -13,18 +20,19 @@ class Command(BaseCommand):
         parser.add_argument('-a', '--all', action='store_true', dest='seed_all', default=False,
                             help="Seed all registered apps.")
         parser.add_argument('-n', '--number', type=int, default=10, help="Number of each model to seed.")
-
-    def add_model(self, model):
-        if model not in self.models:
-            self.models.append(model)
+        parser.add_argument('-e', '--exclude', dest='exclude', action='append', default=[],
+                            help='An app_label or app_label.ModelName to exclude '
+                                 '(use multiple --exclude to exclude multiple apps/models).')
 
     def handle(self, *app_labels, **options):
         number = options.get('number')
         seed_all = options.get('seed_all')
+        exclude = options.get('exclude')
 
-        # Collect all models
-        self.models = []
+        # Exclude models to skip
+        self.process_models_from_applist(exclude, self.exclude_model)
 
+        # Add models to seed
         if len(app_labels) == 0:
             if seed_all:  # Add all models from all apps
                 for app_config in apps.get_app_configs():
@@ -33,29 +41,7 @@ class Command(BaseCommand):
             else:
                 raise SeederCommandError("You must specify a list of apps or the --all flag")
         else:
-            for label in app_labels:
-                try:
-                    app_label, model_label = label.split('.')
-                except ValueError:
-                    # This is just an app - no model qualifier
-                    app_label = label
-                    try:
-                        app_config = apps.get_app_config(app_label)
-                    except LookupError:
-                        raise SeederCommandError("Unknown application: %s" % app_label)
-                    for model in app_config.get_models():
-                        self.add_model(model)
-                else:
-                    # app.model specified
-                    try:
-                        app_config = apps.get_app_config(app_label)
-                    except LookupError:
-                        raise SeederCommandError("Unknown application: %s" % app_label)
-                    try:
-                        model = app_config.get_model(model_label)
-                    except LookupError:
-                        raise SeederCommandError("Unknown model: %s.%s" % (app_label, model_label))
-                    self.add_model(model)
+            self.process_models_from_applist(app_labels, self.add_model)
 
         seeder = Seed.seeder()
 
@@ -64,9 +50,54 @@ class Command(BaseCommand):
 
         warnings.showwarning = lambda *x: None
 
-        for model in self.models:
+        for model in self.prioritized_models():
             seeder.add_entity(model, number)
             print('Seeding %i %ss' % (number, model.__name__))
 
         pks = seeder.execute()
         print(pks)
+
+    def add_model(self, model):
+        if model not in self.include_models:
+            self.include_models.append(model)
+
+    def exclude_model(self, model):
+        if model not in self.exclude_models:
+            self.exclude_models.append(model)
+
+    def process_models_from_applist(self, applist, func):
+        for app in applist:
+            if '.' in app:  # app.model
+                try:
+                    model = apps.get_model(app)
+                except LookupError:
+                    raise SeederCommandError('Unknown model: %s' % app)
+                else:
+                    func(model)
+            else:  # app
+                try:
+                    app_config = apps.get_app_config(app)
+                except LookupError:
+                    raise SeederCommandError("Unknown application: %s" % app)
+                for model in app_config.get_models():
+                    func(model)
+
+    def prioritized_models(self):
+        dependencies = {}
+        models_to_seed = [m for m in self.include_models if m not in self.exclude_models]
+        for model in models_to_seed:
+            dependencies[model] = set()
+            for field in model._meta.get_fields():
+                # Don't know the exact conditions
+                if field.many_to_one is True and field.concrete and field.blank is False:
+                    if field.related_model in models_to_seed:
+                        dependencies[model].add(field.related_model)
+                    else:
+                        pass
+                        # Depends on model that is not going to be seeded;
+                        #   pull from existing?;
+                        #   raise error if not already populated?
+        try:
+            return toposort_flatten(dependencies)
+        except ValueError as ex:
+            raise SeederCommandError(str(ex))
