@@ -68,8 +68,8 @@ class FieldTypeGuesser(object):
         if isinstance(field, PositiveSmallIntegerField): return lambda x: provider.rand_small_int(pos=True)
         if isinstance(field, SmallIntegerField): return lambda x: provider.rand_small_int()
         if isinstance(field, BigIntegerField): return lambda x: provider.rand_big_int()
-        if isinstance(field, PositiveIntegerField): return lambda x: provider.rand_int(pos=True)
-        if isinstance(field, IntegerField): return lambda x: provider.rand_int()
+        if isinstance(field, PositiveIntegerField): return lambda x: provider.rand_small_int(pos=True)
+        if isinstance(field, IntegerField): return lambda x: provider.rand_small_int()
         if isinstance(field, FloatField): return lambda x: provider.rand_float()
         if isinstance(field, DecimalField): return lambda x: random.random()
 
