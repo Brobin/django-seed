@@ -93,21 +93,26 @@ class Command(BaseCommand):
                 for model in app_config.get_models():
                     func(model)
 
+    def model_dependencies(self, model):
+        dependencies = set()
+
+        if hasattr(model._meta, 'get_fields'):  # Django>=1.8
+            for field in model._meta.get_fields():
+                if field.many_to_one is True and field.concrete and field.blank is False:
+                    dependencies.add(field.related_model)
+        else:  # Django<=1.7
+            for field in model._meta.fields:
+                if isinstance(field, ForeignKey) and field.blank is False:
+                    dependencies.add(field.rel.to)
+        return dependencies
+
     def prioritized_models(self):
         dependencies = {}
         models_to_seed = [m for m in self.include_models if m not in self.exclude_models]
         for model in models_to_seed:
-            dependencies[model] = set()
-            for field in model._meta.get_fields():
-                # Don't know the exact conditions
-                if field.many_to_one is True and field.concrete and field.blank is False:
-                    if field.related_model in models_to_seed:
-                        dependencies[model].add(field.related_model)
-                    else:
-                        pass
-                        # Depends on model that is not going to be seeded;
-                        #   pull from existing?;
-                        #   raise error if not already populated?
+            # TODO: dependencies may include models that aren't set to be seeded. How do we handle this?
+            dependencies[model] = self.model_dependencies(model)
+
         try:
             return toposort_flatten(dependencies)
         except ValueError as ex:
