@@ -15,16 +15,25 @@ class Command(BaseCommand):
         self.include_models = []
         self.exclude_models = []
 
+        if hasattr(self, 'option_list'):  # Django <=1.7
+            self.add_arguments()
 
-    def add_arguments(self, parser):
-        parser.add_argument('args', metavar='app_label[.ModelName]', nargs='*',
-                            help='Restricts seeding to the specified app_label or app_label.ModelName.')
-        parser.add_argument('-a', '--all', action='store_true', dest='seed_all', default=False,
-                            help="Seed all registered apps.")
-        parser.add_argument('-n', '--number', type=int, default=10, help="Number of each model to seed.")
-        parser.add_argument('-e', '--exclude', dest='exclude', action='append', default=[],
-                            help='An app_label or app_label.ModelName to exclude '
-                                 '(use multiple --exclude to exclude multiple apps/models).')
+    def add_argument(self, parser, *args, **kwargs):
+        if parser:  # Django >= 1.8
+            parser.add_argument(*args, **kwargs)
+        else:  # Django <=1.7
+            self.option_list += ( make_option(*args, **kwargs), )
+
+    def add_arguments(self, parser=None):
+        if parser:
+            self.add_argument(parser, 'applist', metavar='app_label[.ModelName]', nargs='+',
+                              help='Restricts seeding to the specified app_label or app_label.ModelName.')
+        self.add_argument(parser, '-a', '--all', action='store_true', dest='seed_all', default=False,
+                          help="Seed all registered apps.")
+        self.add_argument(parser, '-e', '--exclude', dest='exclude', action='append', default=[],
+                          help='An app_label or app_label.ModelName to exclude '
+                               '(use multiple --exclude to exclude multiple apps/models).')
+        self.add_argument(parser, '-n', '--number', type=int, default=10, help="Number of each model to seed.")
 
     def handle(self, *app_labels, **options):
         number = options.get('number')
