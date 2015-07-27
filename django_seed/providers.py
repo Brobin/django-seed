@@ -29,8 +29,8 @@ class Provider(object):
 
     def rand_small_int(self, pos=False):
         if pos:
-            return random.randint(0, 65535)
-        return random.randint(-65535, 65535)
+            return random.randint(0, 32767)
+        return random.randint(-32768, 32767)
 
     def rand_int(self, pos=False):
         if pos:
