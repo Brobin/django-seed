@@ -8,6 +8,24 @@ import re
 
 from .providers import Provider
 
+# use timezone aware datetimes if active
+try:
+    # import django settings
+    from django.conf import settings
+    # check if timezone is active
+    if getattr(settings, 'USE_TZ', False):
+        # make datetime timezone aware
+        from django.utils import timezone
+        _timezone_format = lambda value: timezone.make_aware(
+            value, timezone.get_current_timezone()
+        )
+    else:
+        # keep value as is
+        _timezone_format = lambda x: x
+except ImportError:
+    # django not available, keep value as is
+    _timezone_format = lambda x: x
+
 
 class NameGuesser(object):
 
@@ -93,7 +111,9 @@ class FieldTypeGuesser(object):
             return lambda x: faker.text(field.max_length) if field.max_length >= 5 else faker.word()
         if isinstance(field, TextField): return lambda x: faker.text()
 
-        if isinstance(field, DateTimeField): return lambda x: faker.date_time()
+        if isinstance(field, DateTimeField):
+            # format with timezone if it is active
+            return lambda x: _timezone_format(faker.date_time())
         if isinstance(field, DateField): return lambda x: faker.date()
         if isinstance(field, TimeField): return lambda x: faker.time()
         raise AttributeError(field)

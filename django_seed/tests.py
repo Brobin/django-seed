@@ -80,6 +80,31 @@ class SeederTestCase(unittest.TestCase):
         })
         self.assertEqual(len(seeder.execute()[Game]), title_fake.count)
 
+    def test_timezone(self):
+        """test if datetime objects are created timezone aware
+        based on USE_TZ in settings.py
+        """
+        faker = fake
+        seeder = Seeder(faker)
+        try:
+            # import django settings
+            from django.conf import settings
+            from django.utils import timezone
+        except ImportError:
+            pass
+        # check if timezone is active
+        if not getattr(settings, 'USE_TZ', False):
+            setattr(settings, 'USE_TZ', True)
+            deactivate_tz = True
+        else:
+            deactivate_tz = False
+        seeder.add_entity(Game, 1)
+        game = Game.objects.get(pk=seeder.execute()[Game][0])
+        if deactivate_tz:
+            # reset timezone settings
+            setattr(settings, 'USE_TZ', False)
+        self.assertTrue(timezone.is_aware(game.created_at))
+
     def valid_player(self, player):
         p = player
         return 0 <= p.score <= 1000 and '@' in p.nickname
@@ -167,4 +192,3 @@ class SeedCommandTestCase(unittest.TestCase):
         except Exception as e:
             self.assertTrue(isinstance(e, SeederCommandError))
         pass
-        
