@@ -1,0 +1,5 @@
+django
+fake-factory
+coverage
+django-nose
+nose

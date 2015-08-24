@@ -110,7 +110,7 @@ Django-seed does not populate auto-incremented primary keys, instead ``seeder.ex
 Tests
 -----
 
-To un django tests in a django environment:
+To run django tests in a django environment, first make sure you have the packages from `requirement-test.txt` installed, then run the following:
 
 .. code-block:: bash
 
