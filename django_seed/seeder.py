@@ -30,15 +30,17 @@ class ModelSeeder(object):
             if isinstance(field, (ForeignKey, ManyToManyField, OneToOneField)):
                 related_model = field.rel.to
 
-                def build_relation(inserted):
-                    if related_model in inserted and inserted[related_model]:
-                        pk = random.choice(inserted[related_model])
-                        return related_model.objects.get(pk=pk)
-                    else:
-                        message = 'Field {} cannot be null'.format(field)
-                        raise SeederException(message)
+                def build_relation(field, related_model):
+                    def func(inserted):
+                        if related_model in inserted and inserted[related_model]:
+                            pk = random.choice(inserted[related_model])
+                            return related_model.objects.get(pk=pk)
+                        else:
+                            message = 'Field {} cannot be null'.format(field)
+                            raise SeederException(message)
+                    return func
 
-                formatters[field_name] = build_relation
+                formatters[field_name] = build_relation(field, related_model)
                 continue
 
             if isinstance(field, AutoField):
