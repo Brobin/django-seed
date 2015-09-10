@@ -14,6 +14,17 @@ class ModelSeeder(object):
         self.model = model
         self.field_formatters = {}
 
+    @staticmethod
+    def build_relation(field, related_model):
+        def func(inserted):
+            if related_model in inserted and inserted[related_model]:
+                pk = random.choice(inserted[related_model])
+                return related_model.objects.get(pk=pk)
+            else:
+                message = 'Field {} cannot be null'.format(field)
+                raise SeederException(message)
+        return func
+
     def guess_field_formatters(self, faker):
         """
         Gets the formatter methods for each field using the guessers
@@ -28,19 +39,7 @@ class ModelSeeder(object):
         for field in model._meta.fields:
             field_name = field.name
             if isinstance(field, (ForeignKey, ManyToManyField, OneToOneField)):
-                related_model = field.rel.to
-
-                def build_relation(field, related_model):
-                    def func(inserted):
-                        if related_model in inserted and inserted[related_model]:
-                            pk = random.choice(inserted[related_model])
-                            return related_model.objects.get(pk=pk)
-                        else:
-                            message = 'Field {} cannot be null'.format(field)
-                            raise SeederException(message)
-                    return func
-
-                formatters[field_name] = build_relation(field, related_model)
+                formatters[field_name] = self.build_relation(field, field.rel.to)
                 continue
 
             if isinstance(field, AutoField):
