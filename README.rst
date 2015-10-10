@@ -150,7 +150,7 @@ MIT. See `LICENSE`_ for more details.
     :target: https://github.com/Brobin/django-seed/blob/master/LICENSE
     :alt: MIT License
 
-.. |python| image:: https://img.shields.io/badge/python-2.7, 3.x-blue.svg?style=flat-square
+.. |python| image:: https://img.shields.io/pypi/pyversions/django-seed.svg?style=flat-square
     :target: https://pypi.python.org/pypi/django-seed
     :alt: Python 2.7, 3.x
 
