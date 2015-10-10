@@ -27,10 +27,6 @@ class Command(AppCommand):
 
         seeder = Seed.seeder()
 
-        # don't diplay warnings about non-timezone aware datetimes
-        import warnings
-        warnings.showwarning = lambda *x: None
-
         for model in app_config.get_models():
             seeder.add_entity(model, number)
             print('Seeding %i %ss' % (number, model.__name__))
