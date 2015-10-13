@@ -7,7 +7,7 @@ import uuid
 import sys
 
 
-file_extenstions = ( "flac", "mp3", "wav", "bmp", "gif", "jpeg", "jpg", "png",
+file_extensions = ( "flac", "mp3", "wav", "bmp", "gif", "jpeg", "jpg", "png",
                      "tiff", "css", "csv", "html", "js", "json", "txt", "mp4",
                      "avi", "mov", "webm" )
 
@@ -45,7 +45,7 @@ class Provider(object):
 
     def file_name(self):
         filename = self.faker.word()
-        extension = random.choice(file_extenstions)
+        extension = random.choice(file_extensions)
         return '{0}.{1}'.format(filename, extension)
 
     def comma_sep_ints(self):

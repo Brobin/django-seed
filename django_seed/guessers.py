@@ -101,9 +101,9 @@ class FieldTypeGuesser(object):
             return lambda x: provider.comma_sep_ints()
 
         if isinstance(field, BinaryField): return lambda x: provider.binary()
-        if isinstance(field, ImageField): return lambda x: None
+        if isinstance(field, ImageField): return lambda x: provider.file_name()
         if isinstance(field, FilePathField): return lambda x: provider.file_name()
-        if isinstance(field, FileField): return lambda x: None
+        if isinstance(field, FileField): return lambda x: provider.file_name()
 
         if isinstance(field, CharField):
             if field.choices:

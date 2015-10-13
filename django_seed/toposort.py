@@ -65,5 +65,8 @@ make the results deterministic)."""
 
     result = []
     for d in toposort(data):
-        result.extend((sorted if sort else list)(d))
+        try:
+            result.extend((sorted if sort else list)(d))
+        except TypeError as e:
+            result.extend(list(d))
     return result 

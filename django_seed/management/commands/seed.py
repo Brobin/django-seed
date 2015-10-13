@@ -30,7 +30,6 @@ class Command(AppCommand):
         seeder = Seed.seeder()
 
         for model in self.sorted_models(app_config):
-            print(model)
             seeder.add_entity(model, number)
             print('Seeding %i %ss' % (number, model.__name__))
 
