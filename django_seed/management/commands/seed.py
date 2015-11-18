@@ -1,7 +1,9 @@
 
 from django.core.management.base import AppCommand
+from django.db.models import ForeignKey
 from django_seed import Seed
 from django_seed.exceptions import SeederCommandError
+from django_seed.toposort import toposort_flatten
 from optparse import make_option
 import django
 
@@ -11,10 +13,10 @@ class Command(AppCommand):
 
     args = "[appname ...]"
 
-    option_list = AppCommand.option_list + (
+    option_list = [
         make_option('--number', dest='number', default=10,
                     help='number of each model to seed'),
-    )
+    ]
 
     def handle_app_config(self, app_config, **options):
         if app_config.models_module is None:
@@ -27,10 +29,31 @@ class Command(AppCommand):
 
         seeder = Seed.seeder()
 
-        for model in app_config.get_models():
+        for model in self.sorted_models(app_config):
             seeder.add_entity(model, number)
             print('Seeding %i %ss' % (number, model.__name__))
 
         pks = seeder.execute()
         print(pks)
+
+    def dependencies(self, model):
+        dependencies = set()
+        if hasattr(model._meta, 'get_fields'):  # Django>=1.8
+            for field in model._meta.get_fields():
+                if field.many_to_one is True and field.concrete and field.blank is False:
+                    dependencies.add(field.related_model)
+        else:  # Django<=1.7
+            for field in model._meta.fields:
+                if isinstance(field, ForeignKey) and field.blank is False:
+                    dependencies.add(field.rel.to)
+        return dependencies
+
+    def sorted_models(self, app_config):
+        dependencies = {}
+        for model in app_config.get_models():
+            dependencies[model] = self.dependencies(model)
+        try:
+            return toposort_flatten(dependencies)
+        except ValueError as ex:
+            raise SeederCommandError(str(ex))
 
