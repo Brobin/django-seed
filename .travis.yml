@@ -10,7 +10,7 @@ env:
 matrix:
   exclude:
    - python: "3.5"
-   env: DJANGO=1.7
+     env: DJANGO=1.7
 install:
   - pip install -q Django==$DJANGO
   - pip install coverage
