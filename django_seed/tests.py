@@ -7,7 +7,10 @@ import random
 import django
 
 from django.db import models
-from django.utils import unittest
+try:
+    from django.utils.unittest import TestCase
+except:
+    from django.test import TestCase
 from django.core.management import call_command
 
 
@@ -59,7 +62,7 @@ class Action(models.Model):
     target = models.ForeignKey(Player, related_name='enemy_actions+', null=True)
 
 
-class SeederTestCase(unittest.TestCase):
+class SeederTestCase(TestCase):
 
     def test_population(self):
         faker = fake
@@ -144,7 +147,7 @@ class SeederTestCase(unittest.TestCase):
             self.assertTrue(isinstance(e, SeederException))
 
 
-class APISeedTestCase(unittest.TestCase):
+class APISeedTestCase(TestCase):
 
     def setUp(self):
         self.seed1 = Seed()
@@ -181,7 +184,7 @@ class APISeedTestCase(unittest.TestCase):
         self.assertIs(seeder1, seeder2)
 
 
-class SeedCommandTestCase(unittest.TestCase):
+class SeedCommandTestCase(TestCase):
 
     def test_seed_command(self):
         call_command('seed', 'django_seed', number=10)

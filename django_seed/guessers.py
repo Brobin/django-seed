@@ -75,7 +75,7 @@ class FieldTypeGuesser(object):
         faker = self.faker
         provider = self.provider
 
-        if django.VERSION[1] == 8:
+        if django.VERSION[1] >= 8:
             if isinstance(field, DurationField):
                 return lambda x: provider.duration()
             if isinstance(field, UUIDField):
