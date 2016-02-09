@@ -3,6 +3,7 @@ from django_seed.guessers import NameGuesser, FieldTypeGuesser
 from django_seed.exceptions import SeederException
 from django.db.models.fields import AutoField
 from django.db.models import ForeignKey, ManyToManyField, OneToOneField
+from django.contrib.contenttypes.models import ContentType
 
 
 class ModelSeeder(object):
@@ -38,6 +39,14 @@ class ModelSeeder(object):
 
         for field in model._meta.fields:
             field_name = field.name
+
+            if field_name.endswith('_ptr'):
+                continue
+
+            if field_name == 'polymorphic_ctype':
+                formatters[field_name] = ContentType.objects.get_for_model(model)
+                continue
+
             if isinstance(field, (ForeignKey, ManyToManyField, OneToOneField)):
                 formatters[field_name] = self.build_relation(field, field.rel.to)
                 continue
