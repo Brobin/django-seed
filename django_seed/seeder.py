@@ -1,12 +1,13 @@
 import random
-from django_seed.guessers import NameGuesser, FieldTypeGuesser
-from django_seed.exceptions import SeederException
-from django.db.models.fields import AutoField
+
 from django.db.models import ForeignKey, ManyToManyField, OneToOneField
+from django.db.models.fields import AutoField
+
+from django_seed.exceptions import SeederException
+from django_seed.guessers import NameGuesser, FieldTypeGuesser
 
 
 class ModelSeeder(object):
-
     def __init__(self, model):
         """
         :param model: Generator
@@ -23,6 +24,7 @@ class ModelSeeder(object):
             else:
                 message = 'Field {} cannot be null'.format(field)
                 raise SeederException(message)
+
         return func
 
     def guess_field_formatters(self, faker):
@@ -32,11 +34,10 @@ class ModelSeeder(object):
         :param faker: Faker factory object
         """
         formatters = {}
-        model = self.model
         name_guesser = NameGuesser(faker)
         field_type_guesser = FieldTypeGuesser(faker)
 
-        for field in model._meta.fields:
+        for field in self.model._meta.fields:
             field_name = field.name
             if isinstance(field, (ForeignKey, ManyToManyField, OneToOneField)):
                 formatters[field_name] = self.build_relation(field, field.rel.to)
@@ -64,22 +65,31 @@ class ModelSeeder(object):
         :param using:
         :param inserted_entities:
         """
-        obj = self.model()
-        
-        for field, format in self.field_formatters.items():
-            if format:
-                if hasattr(format,'__call__'):
-                    setattr(obj, field, format(inserted_entities))
-                else:
-                    setattr(obj, field, format)
 
-        obj.save(using=using)
+        def format_field(format, inserted_entities):
+            if callable(format):
+                return format(inserted_entities)
+            return format
+
+        def turn_off_auto_add(model):
+            for field in model._meta.fields:
+                if getattr(field, 'auto_now', False):
+                    field.auto_now = False
+                if getattr(field, 'auto_now_add', False):
+                    field.auto_now_add = False
+
+        manager = self.model.objects.db_manager(using=using)
+        turn_off_auto_add(manager.model)
+
+        obj = manager.create(**{
+            field: format_field(field_format, inserted_entities)
+            for field, field_format in self.field_formatters.items()
+        })
 
         return obj.pk
 
 
 class Seeder(object):
-
     def __init__(self, faker):
         """
         :param faker: Generator
@@ -88,7 +98,6 @@ class Seeder(object):
         self.entities = {}
         self.quantities = {}
         self.orders = []
-
 
     def add_entity(self, model, number, customFieldFormatters=None):
         """
@@ -130,7 +139,7 @@ class Seeder(object):
             number = self.quantities[klass]
             if klass not in inserted_entities:
                 inserted_entities[klass] = []
-            for i in range(0,number):
+            for i in range(0, number):
                 entity = self.entities[klass].execute(using, inserted_entities)
                 inserted_entities[klass].append(entity)
 
