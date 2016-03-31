@@ -1,3 +1,4 @@
+from datetime import datetime
 from faker import Faker
 from django_seed.seeder import Seeder
 from django_seed.exceptions import SeederException, SeederCommandError
@@ -21,7 +22,8 @@ class Game(models.Model):
     title = models.CharField(max_length=200)
     slug = models.SlugField(max_length=200)
     description = models.TextField()
-    created_at = models.DateTimeField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     updated_date = models.DateField()
     updated_time = models.TimeField()
     active = models.BooleanField()
@@ -145,6 +147,30 @@ class SeederTestCase(TestCase):
             seeder.execute()
         except Exception as e:
             self.assertTrue(isinstance(e, SeederException))
+
+    def test_auto_now_add(self):
+        date =  datetime(1957, 3, 6, 13, 13)
+        faker = fake
+        seeder = Seeder(faker)
+        seeder.add_entity(Game, 10, {
+            'created_at': lambda x: date
+        })
+        inserted_pks = seeder.execute()[Game]
+
+        games = Game.objects.filter(pk__in=inserted_pks)
+        self.assertTrue(all(game.created_at == date for game in games))
+
+    def test_auto_now(self):
+        date =  datetime(1957, 3, 6, 13, 13)
+        faker = fake
+        seeder = Seeder(faker)
+        seeder.add_entity(Game, 10, {
+            'updated_at': lambda x: date
+        })
+        inserted_pks = seeder.execute()[Game]
+
+        games = Game.objects.filter(pk__in=inserted_pks)
+        self.assertTrue(all(game.updated_at == date for game in games))
 
 
 class APISeedTestCase(TestCase):
