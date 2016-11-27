@@ -18,6 +18,13 @@ class Command(AppCommand):
                     help='number of each model to seed'),
     ]
 
+    def add_arguments(self, parser):
+        super(Command, self).add_arguments(parser)
+
+        parser.add_argument('--number', nargs='?', type=int, default=10, const=10,
+                    help='number of each model to seed')
+
+
     def handle_app_config(self, app_config, **options):
         if app_config.models_module is None:
             raise SeederCommandError('You must provide an app to seed')
