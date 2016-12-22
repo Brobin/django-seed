@@ -45,14 +45,11 @@ class Command(AppCommand):
 
     def dependencies(self, model):
         dependencies = set()
-        if hasattr(model._meta, 'get_fields'):  # Django>=1.8
-            for field in model._meta.get_fields():
-                if field.many_to_one is True and field.concrete and field.blank is False:
-                    dependencies.add(field.related_model)
-        else:  # Django<=1.7
-            for field in model._meta.fields:
-                if isinstance(field, ForeignKey) and field.blank is False:
-                    dependencies.add(field.rel.to)
+
+        for field in model._meta.get_fields():
+            if field.many_to_one is True and field.concrete and field.blank is False:
+                dependencies.add(field.related_model)
+
         return dependencies
 
     def sorted_models(self, app_config):
