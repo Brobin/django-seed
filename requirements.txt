@@ -1,2 +1,2 @@
 django
-fake-factory
+Faker
