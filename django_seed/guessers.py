@@ -14,7 +14,7 @@ def _timezone_format(value):
     :param value: The datetime value
     :return: A locale aware datetime
     """
-    return timezone.make_aware(value) if getattr(settings, 'USE_TZ', False) else value
+    return timezone.make_aware(value, timezone.get_current_timezone()) if getattr(settings, 'USE_TZ', False) else value
 
 
 class NameGuesser(object):
