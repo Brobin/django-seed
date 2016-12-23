@@ -1,27 +1,51 @@
+from contextlib import contextmanager
 from datetime import datetime
+
+from django.utils import timezone
 from faker import Faker
+
+from django_seed.guessers import NameGuesser, FieldTypeGuesser
 from django_seed.seeder import Seeder
 from django_seed.exceptions import SeederException, SeederCommandError
 from django_seed import Seed
 
 import random
-import django
 
 from django.db import models
+from django.conf import settings
+from django.core.management import call_command
+
 try:
     from django.utils.unittest import TestCase
 except:
     from django.test import TestCase
-from django.core.management import call_command
 
 
 fake = Faker()
+
+@contextmanager
+def django_setting(name, value):
+    """
+    Generator that mutates the django.settings object during the context of a test run.
+
+    :param name: The setting name to be affected
+    :param value: The setting value to be defined during the execution
+    :return:
+    """
+    original_value = getattr(settings, name)
+    setattr(settings, name, value)
+
+    try:
+        yield
+    finally:
+        setattr(settings, name, original_value)
 
 
 class Game(models.Model):
     title = models.CharField(max_length=200)
     slug = models.SlugField(max_length=200)
     description = models.TextField()
+    game_started = models.DateTimeField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     updated_date = models.DateField()
@@ -63,6 +87,44 @@ class Action(models.Model):
     target = models.ForeignKey(Player, related_name='enemy_actions+', null=True)
 
 
+class NameGuesserTestCase(TestCase):
+
+    def setUp(self):
+        self.instance = NameGuesser(fake)
+
+    def test_guess_format_timezone(self):
+        test_names = ('something_at', 'something_At', 'gameUpdated_At', 'game_created_at')
+
+        with django_setting('USE_TZ', True):
+            for name in test_names:
+                value = self.instance.guess_format(name)(datetime.now())
+                self.assertTrue(timezone.is_aware(value))
+
+        with django_setting('USE_TZ', False):
+            for name in test_names:
+                value = self.instance.guess_format(name)(datetime.now())
+                self.assertFalse(timezone.is_aware(value))
+
+
+
+class FieldTypeGuesserTestCase(TestCase):
+
+    def setUp(self):
+        self.instance = FieldTypeGuesser(fake)
+
+    def test_guess_with_datetime(self):
+        generator = self.instance.guess_format(models.DateTimeField())
+
+        with django_setting('USE_TZ', True):
+            value = generator(datetime.now())
+            self.assertTrue(timezone.is_aware(value))
+
+        with django_setting('USE_TZ', False):
+            value = generator(datetime.now())
+            self.assertFalse(timezone.is_aware(value))
+
+
+
 class SeederTestCase(TestCase):
 
     def test_population(self):
@@ -84,30 +146,6 @@ class SeederTestCase(TestCase):
         })
         self.assertEqual(len(seeder.execute()[Game]), title_fake.count)
 
-    def test_timezone(self):
-        """test if datetime objects are created timezone aware
-        based on USE_TZ in settings.py
-        """
-        faker = fake
-        seeder = Seeder(faker)
-        try:
-            # import django settings
-            from django.conf import settings
-            from django.utils import timezone
-        except ImportError:
-            pass
-        # check if timezone is active
-        if not getattr(settings, 'USE_TZ', False):
-            setattr(settings, 'USE_TZ', True)
-            deactivate_tz = True
-        else:
-            deactivate_tz = False
-        seeder.add_entity(Game, 1)
-        game = Game.objects.get(pk=seeder.execute()[Game][0])
-        if deactivate_tz:
-            # reset timezone settings
-            setattr(settings, 'USE_TZ', False)
-        self.assertTrue(timezone.is_aware(game.created_at))
 
     def valid_player(self, player):
         p = player
