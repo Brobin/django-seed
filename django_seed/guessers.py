@@ -1,30 +1,20 @@
-
-from django.db.models.fields import *
 from django.db.models import *
+from django.conf import settings
+from django.utils import timezone
 
-import django
 import random
 import re
 
 from .providers import Provider
 
-# use timezone aware datetimes if active
-try:
-    # import django settings
-    from django.conf import settings
-    # check if timezone is active
-    if getattr(settings, 'USE_TZ', False):
-        # make datetime timezone aware
-        from django.utils import timezone
-        _timezone_format = lambda value: timezone.make_aware(
-            value, timezone.get_current_timezone()
-        )
-    else:
-        # keep value as is
-        _timezone_format = lambda x: x
-except ImportError:
-    # django not available, keep value as is
-    _timezone_format = lambda x: x
+def _timezone_format(value):
+    """
+    Generates a timezone aware datetime if the 'USE_TZ' setting is enabled
+
+    :param value: The datetime value
+    :return: A locale aware datetime
+    """
+    return timezone.make_aware(value) if getattr(settings, 'USE_TZ', False) else value
 
 
 class NameGuesser(object):
@@ -40,7 +30,7 @@ class NameGuesser(object):
         name = name.lower()
         faker = self.faker
         if re.findall(r'^is[_A-Z]', name): return lambda x:faker.boolean()
-        elif re.findall(r'(_a|A)t$', name): return lambda x:faker.date_time()
+        elif re.findall(r'(_a|A)t$', name): return lambda x: _timezone_format(faker.date_time())
 
         if name in ('first_name', 'firstname', 'first'): return lambda x: faker.first_name()
         if name in ('last_name', 'lastname', 'last'): return lambda x: faker.last_name()

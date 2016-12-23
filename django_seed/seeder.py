@@ -61,7 +61,7 @@ class ModelSeeder(object):
 
     def execute(self, using, inserted_entities):
         """
-        Execute the stages entities to inserte
+        Execute the stages entities to insert
         :param using:
         :param inserted_entities:
         """
