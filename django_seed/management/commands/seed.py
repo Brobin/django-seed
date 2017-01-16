@@ -18,6 +18,13 @@ class Command(AppCommand):
                     help='number of each model to seed'),
     ]
 
+    def add_arguments(self, parser):
+        super(Command, self).add_arguments(parser)
+
+        parser.add_argument('--number', nargs='?', type=int, default=10, const=10,
+                    help='number of each model to seed')
+
+
     def handle_app_config(self, app_config, **options):
         if app_config.models_module is None:
             raise SeederCommandError('You must provide an app to seed')
@@ -38,14 +45,11 @@ class Command(AppCommand):
 
     def dependencies(self, model):
         dependencies = set()
-        if hasattr(model._meta, 'get_fields'):  # Django>=1.8
-            for field in model._meta.get_fields():
-                if field.many_to_one is True and field.concrete and field.blank is False:
-                    dependencies.add(field.related_model)
-        else:  # Django<=1.7
-            for field in model._meta.fields:
-                if isinstance(field, ForeignKey) and field.blank is False:
-                    dependencies.add(field.rel.to)
+
+        for field in model._meta.get_fields():
+            if field.many_to_one is True and field.concrete and field.blank is False:
+                dependencies.add(field.related_model)
+
         return dependencies
 
     def sorted_models(self, app_config):

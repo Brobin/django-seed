@@ -29,3 +29,6 @@ var/
 *.egg-info/
 .installed.cfg
 *.egg
+
+env/
+.idea

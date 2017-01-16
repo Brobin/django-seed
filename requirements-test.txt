@@ -1,5 +1,5 @@
 django
-fake-factory
+Faker
 coverage
 django-nose
 nose
