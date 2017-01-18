@@ -2,7 +2,7 @@
 import random
 
 
-__version__ = '0.1.6'
+__version__ = '0.1.7'
 
 
 class Seed(object):
@@ -22,7 +22,7 @@ class Seed(object):
     @staticmethod
     def codename(locale=None):
         from django.conf import settings
-        locale = locale or getattr(settings,'LANGUAGE_CODE', None)
+        locale = locale or getattr(settings, 'LANGUAGE_CODE', None)
         codename = locale or 'default'
         return codename
 
@@ -32,7 +32,7 @@ class Seed(object):
         if code not in cls.fakers:
             from faker import Faker
             cls.fakers[code] = Faker(locale)
-            cls.fakers[code].seed(random.randint(1,10000))
+            cls.fakers[code].seed(random.randint(1, 10000))
         return cls.fakers[code]
 
     @classmethod
@@ -44,4 +44,3 @@ class Seed(object):
             cls.seeders[code] = seeder.Seeder(faker)
 
         return cls.seeders[code]
-

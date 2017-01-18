@@ -1,15 +1,14 @@
 
 from datetime import timedelta
 import random
-import struct
 import time
 import uuid
 import sys
 
 
-file_extensions = ( "flac", "mp3", "wav", "bmp", "gif", "jpeg", "jpg", "png",
-                     "tiff", "css", "csv", "html", "js", "json", "txt", "mp4",
-                     "avi", "mov", "webm" )
+file_extensions = ("flac", "mp3", "wav", "bmp", "gif", "jpeg", "jpg", "png",
+                   "tiff", "css", "csv", "html", "js", "json", "txt", "mp4",
+                   "avi", "mov", "webm")
 
 
 class Provider(object):
@@ -55,4 +54,3 @@ class Provider(object):
     def binary(self):
         word = self.faker.text(512)
         return str.encode(str(word))
-
