@@ -50,14 +50,14 @@ Add it to your installed apps in ``settings.py``::
 Usage
 -----
 
-**Note**: When seeding models with Foreign Keys, you need to make sure that those models are seeded first. For example, if a model app `A` has a foreign key to a model in app `B`, you must seed app `B` first.
+**Note**: When seeding models with Foreign Keys, you need to make sure that those models are seeded first. For example, if a model in app `A` has a foreign key to a model in app `B`, you must seed app `B` first.
 
 Using with command
 ------------------
 
 With *django-seed*, you can seed your database with test data from the command line using the ``manage.py seed`` command.
 
-Ex] Seed 15 of each model for the app ``api``:
+Ex: Seed 15 of each model for the app ``api``:
 
 .. code-block:: bash
 
