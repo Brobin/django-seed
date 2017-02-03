@@ -39,6 +39,10 @@ class ModelSeeder(object):
 
         for field in self.model._meta.fields:
             field_name = field.name
+
+            if field_name.endswith('_ptr'):
+                continue
+
             if isinstance(field, (ForeignKey, ManyToManyField, OneToOneField)):
                 formatters[field_name] = self.build_relation(field, field.rel.to)
                 continue
