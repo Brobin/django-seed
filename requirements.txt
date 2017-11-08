@@ -1,2 +1,4 @@
 django
 Faker
+s3direct
+django-hashid-field
