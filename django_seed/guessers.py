@@ -68,6 +68,9 @@ class FieldTypeGuesser(object):
         faker = self.faker
         provider = self.provider
 
+        # This check must come first, else isinstance will pass on a subclass
+        # due to the implementation details of HashidField
+        if isinstance(field, HashidField): return lambda x: provider.rand_small_int(pos=True)
 
         if isinstance(field, DurationField): return lambda x: provider.duration()
         if isinstance(field, UUIDField): return lambda x: provider.uuid()
@@ -109,5 +112,4 @@ class FieldTypeGuesser(object):
         if isinstance(field, TimeField): return lambda x: faker.time()
 
         if isinstance(field, S3DirectField): return lambda x: faker.uri()
-        if isinstance(field, HashidField): return lambda x: provider.rand_small_int(pos=True)
         raise AttributeError(field)
