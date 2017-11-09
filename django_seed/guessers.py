@@ -1,6 +1,8 @@
 from django.db.models import *
 from django.conf import settings
 from django.utils import timezone
+from s3direct.fields import S3DirectField
+from hashid_field import HashidField
 
 import random
 import re
@@ -66,6 +68,9 @@ class FieldTypeGuesser(object):
         faker = self.faker
         provider = self.provider
 
+        # This check must come first, else isinstance will pass on a subclass
+        # due to the implementation details of HashidField
+        if isinstance(field, HashidField): return lambda x: provider.rand_small_int(pos=True)
 
         if isinstance(field, DurationField): return lambda x: provider.duration()
         if isinstance(field, UUIDField): return lambda x: provider.uuid()
@@ -105,4 +110,6 @@ class FieldTypeGuesser(object):
             return lambda x: _timezone_format(faker.date_time())
         if isinstance(field, DateField): return lambda x: faker.date()
         if isinstance(field, TimeField): return lambda x: faker.time()
+
+        if isinstance(field, S3DirectField): return lambda x: faker.uri()
         raise AttributeError(field)
