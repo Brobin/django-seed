@@ -62,9 +62,8 @@ Ex: Seed 15 of each model for the app ``api``:
 .. code-block:: bash
 
     $ python manage.py seed api --number=15
-    
-That's it! Now you have 15 of each model seeded into your database.
 
+That's it! Now you have 15 of each model seeded into your database.
 
 Using with code
 ----------------
@@ -106,6 +105,17 @@ Django-seed does not populate auto-incremented primary keys, instead ``seeder.ex
     }
 
 
+
+Localization
+------------
+
+``Seed.seeder()`` can take a locale as an argument, to return localized data.
+You can find all possible locales in `faker's documentation`_
+
+In order to apply localization, do the next:
+
+    seeder = Seed.seeder('it_IT')
+
 -----
 Tests
 -----
@@ -121,9 +131,9 @@ or if you have ``django_seed`` in INSTALLED_APPS:
 .. code-block:: bash
 
     $ python manage.py test django_seed
-  
 
--------  
+
+-------
 License
 -------
 
@@ -132,27 +142,28 @@ MIT. See `LICENSE`_ for more details.
 
 .. _faker: https://www.github.com/joke2k/faker/
 .. _django_faker: https://www.github.com/joke2k/django-faker/
+.. _faker's documentation: https://faker.readthedocs.io/en/latest/locales.html
 .. _LICENSE: https://github.com/Brobin/django-seed/blob/master/LICENSE
 
 .. |pypi| image:: https://img.shields.io/pypi/v/django-seed.svg?style=flat-square
-    :target: https://pypi.python.org/pypi/django-seed
+:target: https://pypi.python.org/pypi/django-seed
     :alt: pypi
 
 .. |travis| image:: https://img.shields.io/travis/Brobin/django-seed.svg?style=flat-square
-    :target: http://travis-ci.org/Brobin/django-seed
+:target: http://travis-ci.org/Brobin/django-seed
     :alt: Travis Build
-    
+
 .. |coveralls| image:: https://img.shields.io/coveralls/Brobin/django-seed.svg?style=flat-square
-    :target: https://coveralls.io/r/Brobin/django-seed
+:target: https://coveralls.io/r/Brobin/django-seed
     :alt: coverage
 
 .. |license| image:: https://img.shields.io/github/license/Brobin/django-seed.svg?style=flat-square
-    :target: https://github.com/Brobin/django-seed/blob/master/LICENSE
+:target: https://github.com/Brobin/django-seed/blob/master/LICENSE
     :alt: MIT License
 
 .. |python| image:: https://img.shields.io/pypi/pyversions/django-seed.svg?style=flat-square
-    :target: https://pypi.python.org/pypi/django-seed
+:target: https://pypi.python.org/pypi/django-seed
     :alt: Python 2.7, 3.x
 
 .. |seed-logo| image:: assets/django_seed.png
-    :alt: Django Seed
+:alt: Django Seed

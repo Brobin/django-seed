@@ -15,11 +15,12 @@ from django.db import models
 from django.conf import settings
 from django.core.management import call_command
 
+from alphabet_detector import AlphabetDetector
+
 try:
     from django.utils.unittest import TestCase
 except:
     from django.test import TestCase
-
 
 fake = Faker()
 
@@ -71,13 +72,13 @@ class Player(models.Model):
 
 
 class Action(models.Model):
-    ACTION_FIRE ='fire'
-    ACTION_MOVE ='move'
-    ACTION_STOP ='stop'
+    ACTION_FIRE = 'fire'
+    ACTION_MOVE = 'move'
+    ACTION_STOP = 'stop'
     ACTIONS = (
-        (ACTION_FIRE,'Fire'),
-        (ACTION_MOVE,'Move'),
-        (ACTION_STOP,'Stop'),
+        (ACTION_FIRE, 'Fire'),
+        (ACTION_MOVE, 'Move'),
+        (ACTION_STOP, 'Stop'),
     )
     name = models.CharField(max_length=4, choices=ACTIONS)
     executed_at = models.DateTimeField()
@@ -106,7 +107,6 @@ class NameGuesserTestCase(TestCase):
                 self.assertFalse(timezone.is_aware(value))
 
 
-
 class FieldTypeGuesserTestCase(TestCase):
 
     def setUp(self):
@@ -122,7 +122,6 @@ class FieldTypeGuesserTestCase(TestCase):
         with django_setting('USE_TZ', False):
             value = generator(datetime.now())
             self.assertFalse(timezone.is_aware(value))
-
 
 
 class SeederTestCase(TestCase):
@@ -146,7 +145,6 @@ class SeederTestCase(TestCase):
         })
         self.assertEqual(len(seeder.execute()[Game]), title_fake.count)
 
-
     def valid_player(self, player):
         p = player
         return 0 <= p.score <= 1000 and '@' in p.nickname
@@ -154,18 +152,26 @@ class SeederTestCase(TestCase):
     def test_formatter(self):
         faker = fake
         seeder = Seeder(faker)
-        seeder.add_entity(Game,5)
+        seeder.add_entity(Game, 5)
         seeder.add_entity(Player, 10, {
-            'score': lambda x: random.randint(0,1000),
+            'score': lambda x: random.randint(0, 1000),
             'nickname': lambda x: fake.email()
         })
-        seeder.add_entity(Action,30)
+        seeder.add_entity(Action, 30)
         inserted_pks = seeder.execute()
         self.assertTrue(len(inserted_pks[Game]) == 5)
         self.assertTrue(len(inserted_pks[Player]) == 10)
 
         players = Player.objects.all()
         self.assertTrue(any([self.valid_player(p) for p in players]))
+
+    def test_locale(self):
+        ad = AlphabetDetector()
+        faker = Faker('ru_RU')
+        seeder = Seeder(faker)
+        seeder.add_entity(Game, 5)
+        seeder.execute()
+        self.assertTrue(all([ad.is_cyrillic(game.title) for game in Game.objects.all()]))
 
     def test_null_foreign_key(self):
         faker = fake
@@ -186,7 +192,7 @@ class SeederTestCase(TestCase):
             self.assertTrue(isinstance(e, SeederException))
 
     def test_auto_now_add(self):
-        date =  datetime(1957, 3, 6, 13, 13)
+        date = datetime(1957, 3, 6, 13, 13)
         faker = fake
         seeder = Seeder(faker)
         seeder.add_entity(Game, 10, {
@@ -198,7 +204,7 @@ class SeederTestCase(TestCase):
         self.assertTrue(all(game.created_at == date for game in games))
 
     def test_auto_now(self):
-        date =  datetime(1957, 3, 6, 13, 13)
+        date = datetime(1957, 3, 6, 13, 13)
         faker = fake
         seeder = Seeder(faker)
         seeder.add_entity(Game, 10, {

@@ -3,3 +3,4 @@ Faker
 coverage
 django-nose
 nose
+alphabet-detector
