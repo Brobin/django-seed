@@ -4,3 +4,4 @@ toposort
 coverage
 django-nose
 nose
+alphabet-detector
