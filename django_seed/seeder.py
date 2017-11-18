@@ -27,18 +27,30 @@ class ModelSeeder(object):
 
         return func
 
-    def guess_field_formatters(self, faker):
+    def guess_field_formatters(self, faker, formatters=None):
         """
         Gets the formatter methods for each field using the guessers
         or related object fields
         :param faker: Faker factory object
+        :param formatters: this is 'customFieldFormatters' - optional dict with field as key and
+        callable as value
+        :type formatters: dict or None
         """
-        formatters = {}
+        if not formatters:
+            formatters = {}
+
         name_guesser = NameGuesser(faker)
         field_type_guesser = FieldTypeGuesser(faker)
 
         for field in self.model._meta.fields:
             field_name = field.name
+
+            # If user provides dict with data in 'seeder.add_entity(Model, num, data)', no reason to guess format.
+            # Also user can provide field which is not covered in FieldTypeGuesser and 'raise AttributeError(field)'
+            # will not be raised.
+            if field_name in formatters:
+                continue
+
             if isinstance(field, (ForeignKey, ManyToManyField, OneToOneField)):
                 formatters[field_name] = self.build_relation(field, field.rel.to)
                 continue
@@ -102,22 +114,19 @@ class Seeder(object):
     def add_entity(self, model, number, customFieldFormatters=None):
         """
         Add an order for the generation of $number records for $entity.
-
         :param model: mixed A Django Model classname,
         or a faker.orm.django.EntitySeeder instance
         :type model: Model
         :param number: int The number of entities to seed
         :type number: integer
-        :param customFieldFormatters: optional dict with field as key and 
+        :param customFieldFormatters: optional dict with field as key and
         callable as value
         :type customFieldFormatters: dict or None
         """
         if not isinstance(model, ModelSeeder):
             model = ModelSeeder(model)
 
-        model.field_formatters = model.guess_field_formatters(self.faker)
-        if customFieldFormatters:
-            model.field_formatters.update(customFieldFormatters)
+        model.field_formatters = model.guess_field_formatters(self.faker, formatters=customFieldFormatters)
 
         klass = model.model
         self.entities[klass] = model
@@ -127,7 +136,6 @@ class Seeder(object):
     def execute(self, using=None):
         """
         Populate the database using all the Entity classes previously added.
-
         :param using A Django database connection name
         :rtype: A list of the inserted PKs
         """
@@ -153,7 +161,7 @@ class Seeder(object):
 
         klass = self.entities.keys()
         if not klass:
-            message = 'No classed found. Did you add entities to the Seeder?'
+            message = 'No classes found. Did you add entities to the Seeder?'
             raise SeederException(message)
         klass = list(klass)[0]
 
