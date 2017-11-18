@@ -84,12 +84,12 @@ Ex: seeding 5 ``Game`` and 10 ``Player`` objects:
 
     inserted_pks = seeder.execute()
 
-The seeder uses the name and column type to populate the Model with relevant data. If django-seed misinterprets a column name, you can still specify a custom function to be used for populating a particular column, by adding a third argument to the ``add_entity()`` method:
+The seeder uses the name and column type to populate the Model with relevant data. If django-seed misinterprets a column name or column type and *AttributeError(field)* is thrown, you can still specify a custom function to be used for populating a particular column, by adding a third argument to the ``add_entity()`` method:
 
 .. code-block:: python
 
     seeder.add_entity(Player, 10, {
-        'score':    lambda x: random.randint(0,1000),
+        'score':    lambda x: random.randint(0, 1000),
         'nickname': lambda x: seeder.faker.email(),
     })
     seeder.execute()
@@ -110,7 +110,6 @@ You may specify a different locale by passing it in the constructor of the seede
 
     seeder = Seed.seeder(locale='sv_SE')
     seeder.faker.city()  # 'Västerås'
-
 
 
 Localization
@@ -138,7 +137,6 @@ or if you have ``django_seed`` in INSTALLED_APPS:
 .. code-block:: bash
 
     $ python manage.py test django_seed
-
 
 -------
 License

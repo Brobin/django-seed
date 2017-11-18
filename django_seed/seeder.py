@@ -70,13 +70,18 @@ class ModelSeeder(object):
 
         return func
 
-    def guess_field_formatters(self, faker):
+    def guess_field_formatters(self, faker, formatters=None):
         """
         Gets the formatter methods for each field using the guessers
         or related object fields
         :param faker: Faker factory object
+        :param formatters: this is 'customFieldFormatters' - optional dict with field as key and
+        callable as value
+        :type formatters: dict or None
         """
-        formatters = {}
+        if not formatters:
+            formatters = {}
+
         name_guesser = NameGuesser(faker)
         field_type_guesser = FieldTypeGuesser(faker)
 
@@ -85,6 +90,12 @@ class ModelSeeder(object):
             field_name = field.name
 
             if field.primary_key:
+                continue
+
+            # If user provides dict with data in 'seeder.add_entity(Model, num, data)', no reason to guess format.
+            # Also user can provide field which is not covered in FieldTypeGuesser and 'raise AttributeError(field)'
+            # will not be raised.
+            if field_name in formatters:
                 continue
 
             if field.get_default():
@@ -175,7 +186,6 @@ class Seeder(object):
     def add_entity(self, model, number, customFieldFormatters=None):
         """
         Add an order for the generation of $number records for $entity.
-
         :param model: mixed A Django Model classname,
         or a faker.orm.django.EntitySeeder instance
         :type model: Model
@@ -190,9 +200,7 @@ class Seeder(object):
         # orders for a specific model are created before a single execute
         model = ModelSeeder(model)
 
-        model.field_formatters = model.guess_field_formatters(self.faker)
-        if customFieldFormatters:
-            model.field_formatters.update(customFieldFormatters)
+        model.field_formatters = model.guess_field_formatters(self.faker, formatters=customFieldFormatters)
 
         order = {
             "klass": model.model,
@@ -204,7 +212,6 @@ class Seeder(object):
     def execute(self, using=None, inserted_entities={}):
         """
         Populate the database using all the Entity classes previously added.
-
         :param using A Django database connection name
         :rtype: A list of the inserted PKs
         """
@@ -236,7 +243,7 @@ class Seeder(object):
 
         klasses = [order["klass"] for order in self.orders]
         if not klasses:
-            message = 'No classed found. Did you add entities to the Seeder?'
+            message = 'No classes found. Did you add entities to the Seeder?'
             raise SeederException(message)
         klass = list(klasses)[0]
 
