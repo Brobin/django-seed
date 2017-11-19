@@ -5,6 +5,7 @@ from datetime import datetime
 
 from django.conf import settings
 from django.core.management import call_command
+from django.core.validators import validate_comma_separated_integer_list
 from django.db import models
 from django.utils import timezone
 
@@ -66,8 +67,8 @@ class Player(models.Model):
     score = models.BigIntegerField()
     last_login_at = models.DateTimeField()
     game = models.ForeignKey(Game)
-    # ip = models.IPAddressField()
-    achievements = models.CommaSeparatedIntegerField(max_length=1000)
+    ip = models.GenericIPAddressField()
+    achievements = models.CharField(validators=[validate_comma_separated_integer_list], max_length=1000)
     friends = models.PositiveIntegerField()
     balance = models.FloatField()
 
