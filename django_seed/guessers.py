@@ -1,5 +1,6 @@
 from django.db.models import *
 from django.conf import settings
+from django.core.validators import validate_comma_separated_integer_list
 from django.utils import timezone
 
 import random
@@ -84,10 +85,11 @@ class FieldTypeGuesser(object):
         if isinstance(field, URLField): return lambda x: faker.uri()
         if isinstance(field, SlugField): return lambda x: faker.uri_page()
         if isinstance(field, IPAddressField) or isinstance(field, GenericIPAddressField):
-            protocol = random.choice(['ipv4','ipv6'])
+            protocol = random.choice(['ipv4', 'ipv6'])
             return lambda x: getattr(faker, protocol)()
         if isinstance(field, EmailField): return lambda x: faker.email()
-        if isinstance(field, CommaSeparatedIntegerField):
+        if isinstance(field, CommaSeparatedIntegerField) or \
+                (isinstance(field, CharField) and (validate_comma_separated_integer_list in field.validators)):
             return lambda x: provider.comma_sep_ints()
 
         if isinstance(field, BinaryField): return lambda x: provider.binary()

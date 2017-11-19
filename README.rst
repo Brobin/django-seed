@@ -120,6 +120,8 @@ You can find all possible locales in `faker's documentation`_
 
 In order to apply localization, do the next:
 
+.. code-block:: python
+
     seeder = Seed.seeder('it_IT')
 
 -----
