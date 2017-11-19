@@ -151,7 +151,7 @@ MIT. See `LICENSE`_ for more details.
 .. _LICENSE: https://github.com/Brobin/django-seed/blob/master/LICENSE
 
 .. |pypi| image:: https://img.shields.io/pypi/v/django-seed.svg?style=flat-square
-:target: https://pypi.python.org/pypi/django-seed
+    :target: https://pypi.python.org/pypi/django-seed
     :alt: pypi
 
 .. |actions| image:: https://github.com/Brobin/django-seed/workflows/Test/badge.svg
@@ -159,11 +159,11 @@ MIT. See `LICENSE`_ for more details.
     :alt: Actions Build
     
 .. |coveralls| image:: https://img.shields.io/coveralls/Brobin/django-seed.svg?style=flat-square
-:target: https://coveralls.io/r/Brobin/django-seed
+    :target: https://coveralls.io/r/Brobin/django-seed
     :alt: coverage
 
 .. |license| image:: https://img.shields.io/github/license/Brobin/django-seed.svg?style=flat-square
-:target: https://github.com/Brobin/django-seed/blob/master/LICENSE
+    :target: https://github.com/Brobin/django-seed/blob/master/LICENSE
     :alt: MIT License
 
 .. |python| image:: https://img.shields.io/pypi/pyversions/django-seed.svg?style=flat-square

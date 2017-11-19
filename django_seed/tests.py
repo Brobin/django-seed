@@ -1,21 +1,21 @@
+import random
+
 from contextlib import contextmanager
 from datetime import datetime
 
+from django.conf import settings
+from django.core.management import call_command
+from django.db import models
 from django.utils import timezone
-from faker import Faker
 
 from django_seed.guessers import NameGuesser, FieldTypeGuesser
 from django_seed.seeder import Seeder
 from django_seed.exceptions import SeederException, SeederCommandError
 from django_seed import Seed
 
-import random
-
-from django.db import models
-from django.conf import settings
-from django.core.management import call_command
-
+from faker import Faker
 from alphabet_detector import AlphabetDetector
+from jsonfield import JSONField
 
 try:
     from django.utils.unittest import TestCase
@@ -130,6 +130,10 @@ class Newspaper(models.Model):
     reporters = models.ManyToManyField(Reporter)
 
 
+class NotCoveredFields(models.Model):
+    json = JSONField()
+
+
 class NameGuesserTestCase(TestCase):
 
     def setUp(self):
@@ -234,6 +238,20 @@ class SeederTestCase(TestCase):
         players = Player.objects.all()
         self.assertTrue(any([self.valid_player(p) for p in players]))
 
+    def test_not_covered_fields(self):
+        """
+        Tell the django-seed how to work with fields which are not covered by the code. Avoids AttributeError(field).
+        :return:
+        """
+        faker = fake
+        seeder = Seeder(faker)
+        seeder.add_entity(NotCoveredFields, 10, {
+            'json': lambda x: {seeder.faker.domain_name(): {'description': seeder.faker.text()}},
+        })
+        inserted_pks = seeder.execute()
+        self.assertTrue(len(inserted_pks[NotCoveredFields]) == 10)
+        self.assertTrue(all([field.json for field in NotCoveredFields.objects.all()]))
+
     def test_locale(self):
         ad = AlphabetDetector()
         faker = Faker('ru_RU')
@@ -325,7 +343,7 @@ class APISeedTestCase(TestCase):
 class SeedCommandTestCase(TestCase):
 
     def test_seed_command(self):
-        call_command('seed', 'django_seed', number=10)
+        call_command('seed', 'django_seed', number=10, exclude_models=[NotCoveredFields])
 
     def test_invalid_number_arg(self):
         try:
