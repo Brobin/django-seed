@@ -1,20 +1,20 @@
+import random
+
 from contextlib import contextmanager
 from datetime import datetime
 
+from django.conf import settings
+from django.contrib.gis.geos import Point
+from django.contrib.gis.db import models
+from django.core.management import call_command
 from django.utils import timezone
-from faker import Faker
 
 from django_seed.guessers import NameGuesser, FieldTypeGuesser
 from django_seed.seeder import Seeder
 from django_seed.exceptions import SeederException, SeederCommandError
 from django_seed import Seed
 
-import random
-
-from django.db import models
-from django.conf import settings
-from django.core.management import call_command
-
+from faker import Faker
 from alphabet_detector import AlphabetDetector
 
 try:
@@ -23,6 +23,7 @@ except:
     from django.test import TestCase
 
 fake = Faker()
+
 
 @contextmanager
 def django_setting(name, value):
@@ -65,7 +66,7 @@ class Player(models.Model):
     score = models.BigIntegerField()
     last_login_at = models.DateTimeField()
     game = models.ForeignKey(Game)
-    ip = models.IPAddressField()
+    # ip = models.IPAddressField()
     achievements = models.CommaSeparatedIntegerField(max_length=1000)
     friends = models.PositiveIntegerField()
     balance = models.FloatField()
@@ -84,8 +85,12 @@ class Action(models.Model):
     executed_at = models.DateTimeField()
     duration = models.DurationField()
     uuid = models.UUIDField()
-    actor = models.ForeignKey(Player,related_name='actions', null=False)
+    actor = models.ForeignKey(Player, related_name='actions', null=False)
     target = models.ForeignKey(Player, related_name='enemy_actions+', null=True)
+
+
+class NotCoveredFields(models.Model):
+    geo = models.PointField(null=True)
 
 
 class NameGuesserTestCase(TestCase):
@@ -164,6 +169,20 @@ class SeederTestCase(TestCase):
 
         players = Player.objects.all()
         self.assertTrue(any([self.valid_player(p) for p in players]))
+
+    def test_not_covered_fields(self):
+        """
+        Tell the django-seed how to work with fields which are not covered by the code. Avoids AttributeError(field).
+        :return:
+        """
+        faker = fake
+        seeder = Seeder(faker)
+        seeder.add_entity(NotCoveredFields, 10, {
+            'geo': lambda x: Point(float(seeder.faker.latitude()), float(seeder.faker.latitude())),
+        })
+        inserted_pks = seeder.execute()
+        self.assertTrue(len(inserted_pks[NotCoveredFields]) == 10)
+        self.assertTrue(all([field.geo for field in NotCoveredFields.objects.all()]))
 
     def test_locale(self):
         ad = AlphabetDetector()
@@ -256,7 +275,7 @@ class APISeedTestCase(TestCase):
 class SeedCommandTestCase(TestCase):
 
     def test_seed_command(self):
-        call_command('seed', 'django_seed', number=10)
+        call_command('seed', 'django_seed', number=10, exclude_models=[NotCoveredFields])
 
     def test_invalid_number_arg(self):
         try:

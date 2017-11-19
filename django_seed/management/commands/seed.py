@@ -22,8 +22,7 @@ class Command(AppCommand):
         super(Command, self).add_arguments(parser)
 
         parser.add_argument('--number', nargs='?', type=int, default=10, const=10,
-                    help='number of each model to seed')
-
+                            help='number of each model to seed')
 
     def handle_app_config(self, app_config, **options):
         if app_config.models_module is None:
@@ -37,6 +36,9 @@ class Command(AppCommand):
         seeder = Seed.seeder()
 
         for model in self.sorted_models(app_config):
+            if model in options.get('exclude_models', []):
+                continue
+
             seeder.add_entity(model, number)
             print('Seeding %i %ss' % (number, model.__name__))
 
@@ -60,4 +62,3 @@ class Command(AppCommand):
             return toposort_flatten(dependencies)
         except ValueError as ex:
             raise SeederCommandError(str(ex))
-
