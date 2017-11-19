@@ -4,9 +4,8 @@ from contextlib import contextmanager
 from datetime import datetime
 
 from django.conf import settings
-from django.contrib.gis.geos import Point
-from django.contrib.gis.db import models
 from django.core.management import call_command
+from django.db import models
 from django.utils import timezone
 
 from django_seed.guessers import NameGuesser, FieldTypeGuesser
@@ -16,6 +15,7 @@ from django_seed import Seed
 
 from faker import Faker
 from alphabet_detector import AlphabetDetector
+from jsonfield import JSONField
 
 try:
     from django.utils.unittest import TestCase
@@ -90,7 +90,7 @@ class Action(models.Model):
 
 
 class NotCoveredFields(models.Model):
-    geo = models.PointField(null=True)
+    json = JSONField()
 
 
 class NameGuesserTestCase(TestCase):
@@ -178,11 +178,11 @@ class SeederTestCase(TestCase):
         faker = fake
         seeder = Seeder(faker)
         seeder.add_entity(NotCoveredFields, 10, {
-            'geo': lambda x: Point(float(seeder.faker.latitude()), float(seeder.faker.latitude())),
+            'json': lambda x: {seeder.faker.domain_name(): {'description': seeder.faker.text()}},
         })
         inserted_pks = seeder.execute()
         self.assertTrue(len(inserted_pks[NotCoveredFields]) == 10)
-        self.assertTrue(all([field.geo for field in NotCoveredFields.objects.all()]))
+        self.assertTrue(all([field.json for field in NotCoveredFields.objects.all()]))
 
     def test_locale(self):
         ad = AlphabetDetector()

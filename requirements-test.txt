@@ -4,3 +4,4 @@ coverage
 django-nose
 nose
 alphabet-detector
+jsonfield
