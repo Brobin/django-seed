@@ -12,7 +12,7 @@ def configure():
     settings.configure(
         DATABASES={
             'default': {
-                'ENGINE': 'django.db.backends.sqlite3',
+                'ENGINE': 'django.contrib.gis.db.backends.spatialite',
                 'NAME': ':memory:',
             }
         },
@@ -20,8 +20,8 @@ def configure():
             'django_seed',
             'django_nose',
         ),
-        TEST_RUNNER = 'django_nose.NoseTestSuiteRunner',
-        NOSE_ARGS = [
+        TEST_RUNNER='django_nose.NoseTestSuiteRunner',
+        NOSE_ARGS=[
             '--with-coverage',
             '--cover-package=django_seed',
         ],
@@ -30,7 +30,7 @@ def configure():
     )
 
 
-if not settings.configured: 
+if not settings.configured:
     configure()
 
 
