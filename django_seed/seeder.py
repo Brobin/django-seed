@@ -40,7 +40,7 @@ class ModelSeeder(object):
         for field in self.model._meta.fields:
             field_name = field.name
             if isinstance(field, (ForeignKey, ManyToManyField, OneToOneField)):
-                formatters[field_name] = self.build_relation(field, field.rel.to)
+                formatters[field_name] = self.build_relation(field, field.related_model)
                 continue
 
             if isinstance(field, AutoField):
