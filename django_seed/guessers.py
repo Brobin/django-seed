@@ -1,6 +1,7 @@
 from django.db.models import *
 from django.conf import settings
 from django.utils import timezone
+from pprint import pprint
 
 import random
 import re
@@ -65,7 +66,6 @@ class FieldTypeGuesser(object):
         """
         faker = self.faker
         provider = self.provider
-
 
         if isinstance(field, DurationField): return lambda x: provider.duration()
         if isinstance(field, UUIDField): return lambda x: provider.uuid()

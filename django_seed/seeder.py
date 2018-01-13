@@ -38,7 +38,13 @@ class ModelSeeder(object):
         field_type_guesser = FieldTypeGuesser(faker)
 
         for field in self.model._meta.fields:
+
             field_name = field.name
+
+            if field.get_default(): 
+                formatters[field_name] = field.get_default()
+                continue
+            
             if isinstance(field, (ForeignKey, ManyToManyField, OneToOneField)):
                 formatters[field_name] = self.build_relation(field, field.related_model)
                 continue
