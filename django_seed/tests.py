@@ -63,7 +63,7 @@ class Player(models.Model):
     avatar = models.FilePathField()
     score = models.BigIntegerField()
     last_login_at = models.DateTimeField()
-    game = models.ForeignKey(Game)
+    game = models.ForeignKey(to=Game, on_delete=models.CASCADE)
     ip = models.IPAddressField()
     achievements = models.CommaSeparatedIntegerField(max_length=1000)
     friends = models.PositiveIntegerField()
@@ -83,8 +83,15 @@ class Action(models.Model):
     executed_at = models.DateTimeField()
     duration = models.DurationField()
     uuid = models.UUIDField()
-    actor = models.ForeignKey(Player,related_name='actions', null=False)
-    target = models.ForeignKey(Player, related_name='enemy_actions+', null=True)
+    actor = models.ForeignKey(to=Player,on_delete=models.CASCADE,related_name='actions', null=False)
+    target = models.ForeignKey(to=Player,on_delete=models.CASCADE, related_name='enemy_actions+', null=True)
+
+class Product(models.Model):
+
+    name = models.CharField(max_length=100)
+    short_description = models.CharField(max_length=100, default='default short description')
+    description = models.TextField(default='default long description')
+    enabled = models.BooleanField(default=True)
 
 
 class NameGuesserTestCase(TestCase):
@@ -258,3 +265,32 @@ class SeedCommandTestCase(TestCase):
         except Exception as e:
             self.assertTrue(isinstance(e, SeederCommandError))
         pass
+
+class DefaultValueTestCase(TestCase):
+
+    def test_default_value_guessed_by_field_type(self):
+        faker = fake
+        seeder = Seeder(faker)
+
+        seeder.add_entity(Product, 1, {'name':'Awesome Product'})
+        _id = seeder.execute()
+
+        self.assertIsNotNone(_id)
+
+        product = Product.objects.get(id=_id[Product][0])
+
+        self.assertEquals(product.short_description, 'default short description')
+        self.assertTrue(product.enabled)
+
+    def test_default_value_guessed_by_field_name(self):
+        faker = fake
+        seeder = Seeder(faker)
+
+        seeder.add_entity(Product, 1, {'name':'Great Product'})
+        _id = seeder.execute()
+
+        self.assertIsNotNone(_id)
+
+        product = Product.objects.get(id=_id[Product][0])
+
+        self.assertEquals(product.description, 'default long description')

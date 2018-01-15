@@ -66,7 +66,6 @@ class FieldTypeGuesser(object):
         faker = self.faker
         provider = self.provider
 
-
         if isinstance(field, DurationField): return lambda x: provider.duration()
         if isinstance(field, UUIDField): return lambda x: provider.uuid()
 
