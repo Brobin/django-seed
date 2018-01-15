@@ -1,7 +1,6 @@
 from django.db.models import *
 from django.conf import settings
 from django.utils import timezone
-from pprint import pprint
 
 import random
 import re
