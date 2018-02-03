@@ -69,7 +69,6 @@ class Player(models.Model):
     friends = models.PositiveIntegerField()
     balance = models.FloatField()
 
-
 class Action(models.Model):
     ACTION_FIRE ='fire'
     ACTION_MOVE ='move'
@@ -87,11 +86,17 @@ class Action(models.Model):
     target = models.ForeignKey(to=Player,on_delete=models.CASCADE, related_name='enemy_actions+', null=True)
 
 class Product(models.Model):
-
     name = models.CharField(max_length=100)
     short_description = models.CharField(max_length=100, default='default short description')
     description = models.TextField(default='default long description')
     enabled = models.BooleanField(default=True)
+
+class Customer(models.Model):
+    name = models.CharField(max_length=255)
+    country = models.CharField(max_length=30)
+    address = models.CharField(max_length=50)
+    created_at = models.DateTimeField(auto_now=False, auto_now_add=True)
+    comments = models.TextField(max_length=500)
 
 
 class NameGuesserTestCase(TestCase):
@@ -294,3 +299,44 @@ class DefaultValueTestCase(TestCase):
         product = Product.objects.get(id=_id[Product][0])
 
         self.assertEquals(product.description, 'default long description')
+
+class LengthRulesTestCase(TestCase):
+
+    def test_max_length(self):
+        faker = fake
+        seeder = Seeder(faker)
+
+        name_max_len = Customer._meta.get_field('name').max_length
+        country_max_len = Customer._meta.get_field('country').max_length
+        address_max_len = Customer._meta.get_field('address').max_length
+        comments_max_len = Customer._meta.get_field('comments').max_length
+
+        rand = random.randint(1, 10)
+
+        data = {
+            'name': 'x' * (name_max_len + rand),
+            'country': 'p' * (country_max_len + rand),
+            'address': 't' * (address_max_len + rand),
+            'comments': 'o' * (comments_max_len + rand),
+        }
+
+        seeder.add_entity(Customer, 1, data)
+        _id = seeder.execute()
+
+        customer = Customer.objects.get(id=_id[Customer][0])
+
+        self.assertTrue(len(customer.name) <= name_max_len, 
+            "name with length {}, does not respect max length restriction of {}"
+            .format(len(customer.name), name_max_len))
+
+        self.assertTrue(len(customer.country) <= country_max_len,
+            "country with length {}, does not respect max length restriction of {}"
+            .format(len(customer.name), country_max_len))
+
+        self.assertTrue(len(customer.address) <= address_max_len,
+            "address with length {}, does not respect max length restriction of {}"
+            .format(len(customer.name), address_max_len))
+
+        self.assertTrue(len(customer.comments) <= comments_max_len,
+            "comments with length {}, does not respect max length restriction of {}"
+            .format(len(customer.comments), comments_max_len))
