@@ -23,6 +23,9 @@ except:
 
 fake = Faker()
 
+DEF_LD = "default long description"
+DEF_SD = "default short description"
+
 @contextmanager
 def django_setting(name, value):
     """
@@ -87,8 +90,8 @@ class Action(models.Model):
 
 class Product(models.Model):
     name = models.CharField(max_length=100)
-    short_description = models.CharField(max_length=100, default='default short description')
-    description = models.TextField(default='default long description')
+    short_description = models.CharField(max_length=100, default=DEF_SD)
+    description = models.TextField(default=DEF_LD)
     enabled = models.BooleanField(default=True)
 
 class Customer(models.Model):
@@ -284,7 +287,7 @@ class DefaultValueTestCase(TestCase):
 
         product = Product.objects.get(id=_id[Product][0])
 
-        self.assertEquals(product.short_description, 'default short description')
+        self.assertEquals(product.short_description, DEF_SD)
         self.assertTrue(product.enabled)
 
     def test_default_value_guessed_by_field_name(self):
@@ -298,7 +301,7 @@ class DefaultValueTestCase(TestCase):
 
         product = Product.objects.get(id=_id[Product][0])
 
-        self.assertEquals(product.description, 'default long description')
+        self.assertEquals(product.description, DEF_LD)
 
 class LengthRulesTestCase(TestCase):
 
@@ -340,3 +343,20 @@ class LengthRulesTestCase(TestCase):
         self.assertTrue(len(customer.comments) <= comments_max_len,
             "comments with length {}, does not respect max length restriction of {}"
             .format(len(customer.comments), comments_max_len))
+
+
+
+
+    def test_default_with_max_length(self):
+        faker = fake
+        seeder = Seeder(faker)
+
+        seeder.add_entity(Product, 1)
+
+        _id = seeder.execute()
+
+        product = Product.objects.get(id=_id[Product][0])
+
+        self.assertTrue(len(DEF_LD) == len(product.description))
+
+
