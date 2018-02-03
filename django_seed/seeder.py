@@ -95,7 +95,7 @@ class ModelSeeder(object):
         for data_field in faker_data:
             field = self.model._meta.get_field(data_field)
 
-            if field.max_length:
+            if field.max_length and isinstance(faker_data[data_field], str):
                 faker_data[data_field] = faker_data[data_field][:field.max_length]
 
         obj = manager.create(**faker_data)
