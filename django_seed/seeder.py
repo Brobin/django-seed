@@ -6,7 +6,6 @@ from django.db.models.fields import AutoField
 from django_seed.exceptions import SeederException
 from django_seed.guessers import NameGuesser, FieldTypeGuesser
 
-
 class ModelSeeder(object):
     def __init__(self, model):
         """
@@ -87,10 +86,19 @@ class ModelSeeder(object):
         manager = self.model.objects.db_manager(using=using)
         turn_off_auto_add(manager.model)
 
-        obj = manager.create(**{
+        faker_data = {
             field: format_field(field_format, inserted_entities)
             for field, field_format in self.field_formatters.items()
-        })
+        }
+
+        # max length restriction check
+        for data_field in faker_data:
+            field = self.model._meta.get_field(data_field)
+
+            if field.max_length and isinstance(faker_data[data_field], str):
+                faker_data[data_field] = faker_data[data_field][:field.max_length]
+
+        obj = manager.create(**faker_data)
 
         return obj.pk
 
@@ -124,7 +132,7 @@ class Seeder(object):
         model.field_formatters = model.guess_field_formatters(self.faker)
         if customFieldFormatters:
             model.field_formatters.update(customFieldFormatters)
-
+        
         klass = model.model
         self.entities[klass] = model
         self.quantities[klass] = number

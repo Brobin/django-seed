@@ -25,7 +25,7 @@ class NameGuesser(object):
 
     def guess_format(self, name):
         """
-        Returns a faker method baed on the field's name
+        Returns a faker method based on the field's name
         :param name:
         """
         name = name.lower()
