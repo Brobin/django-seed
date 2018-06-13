@@ -6,6 +6,7 @@ from django.db.models.fields import AutoField
 from django_seed.exceptions import SeederException
 from django_seed.guessers import NameGuesser, FieldTypeGuesser
 
+
 class ModelSeeder(object):
     def __init__(self, model):
         """
@@ -26,6 +27,9 @@ class ModelSeeder(object):
 
         return func
 
+    def get_field_type_guesser(self, faker):
+        return FieldTypeGuesser(faker)
+
     def guess_field_formatters(self, faker):
         """
         Gets the formatter methods for each field using the guessers
@@ -34,16 +38,16 @@ class ModelSeeder(object):
         """
         formatters = {}
         name_guesser = NameGuesser(faker)
-        field_type_guesser = FieldTypeGuesser(faker)
+        field_type_guesser = self.get_field_type_guesser(faker)
 
         for field in self.model._meta.fields:
 
             field_name = field.name
 
-            if field.get_default(): 
+            if field.get_default():
                 formatters[field_name] = field.get_default()
                 continue
-            
+
             if isinstance(field, (ForeignKey, ManyToManyField, OneToOneField)):
                 formatters[field_name] = self.build_relation(field, field.related_model)
                 continue
@@ -122,7 +126,7 @@ class Seeder(object):
         :type model: Model
         :param number: int The number of entities to seed
         :type number: integer
-        :param customFieldFormatters: optional dict with field as key and 
+        :param customFieldFormatters: optional dict with field as key and
         callable as value
         :type customFieldFormatters: dict or None
         """
@@ -132,7 +136,7 @@ class Seeder(object):
         model.field_formatters = model.guess_field_formatters(self.faker)
         if customFieldFormatters:
             model.field_formatters.update(customFieldFormatters)
-        
+
         klass = model.model
         self.entities[klass] = model
         self.quantities[klass] = number
