@@ -20,7 +20,7 @@ class ModelSeeder(object):
             if related_model in inserted and inserted[related_model]:
                 pk = random.choice(inserted[related_model])
                 return related_model.objects.get(pk=pk)
-            else:
+            elif not field.null:
                 message = 'Field {} cannot be null'.format(field)
                 raise SeederException(message)
 
