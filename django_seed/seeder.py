@@ -13,6 +13,7 @@ class ModelSeeder(object):
         """
         self.model = model
         self.field_formatters = {}
+        self.many_relations = {}
 
     @staticmethod
     def build_relation(field, related_model):
@@ -20,7 +21,22 @@ class ModelSeeder(object):
             if related_model in inserted and inserted[related_model]:
                 pk = random.choice(inserted[related_model])
                 return related_model.objects.get(pk=pk)
-            else:
+            elif not field.null:
+                message = 'Field {} cannot be null'.format(field)
+                raise SeederException(message)
+
+        return func
+
+    @staticmethod
+    def build_many_relation(field, related_model):
+        def func(inserted):
+            if related_model in inserted and inserted[related_model]:
+                max_relations = min(10, round(len(inserted[related_model]) / 5) + 1)
+                return [
+                    related_model.objects.get(pk=random.choice(inserted[related_model]))
+                    for _ in range(random.randint(0, max_relations))
+                ]
+            elif not field.null:
                 message = 'Field {} cannot be null'.format(field)
                 raise SeederException(message)
 
@@ -44,7 +60,7 @@ class ModelSeeder(object):
                 formatters[field_name] = field.get_default()
                 continue
             
-            if isinstance(field, (ForeignKey, ManyToManyField, OneToOneField)):
+            if isinstance(field, (ForeignKey, OneToOneField)):
                 formatters[field_name] = self.build_relation(field, field.related_model)
                 continue
 
@@ -61,6 +77,9 @@ class ModelSeeder(object):
             if formatter:
                 formatters[field_name] = formatter
                 continue
+
+        for field in self.model._meta.many_to_many:
+            self.many_relations[field.name] = self.build_many_relation(field, field.related_model)
 
         return formatters
 
@@ -99,6 +118,12 @@ class ModelSeeder(object):
                 faker_data[data_field] = faker_data[data_field][:field.max_length]
 
         obj = manager.create(**faker_data)
+
+        for field, list in self.many_relations.items():
+            list = list(inserted_entities)
+            if list:
+                for related_obj in list:
+                    getattr(obj, field).add(related_obj)
 
         return obj.pk
 
