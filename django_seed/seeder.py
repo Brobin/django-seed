@@ -36,7 +36,7 @@ class ModelSeeder(object):
                     related_model.objects.get(pk=random.choice(inserted[related_model]))
                     for _ in range(random.randint(0, max_relations))
                 ]
-            elif not field.null:
+            elif not field.blank:
                 message = 'Field {} cannot be null'.format(field)
                 raise SeederException(message)
 
