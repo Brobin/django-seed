@@ -189,7 +189,7 @@ class Seeder(object):
         }
         self.orders.append(order)
 
-    def execute(self, using=None):
+    def execute(self, using=None, inserted_entities={}):
         """
         Populate the database using all the Entity classes previously added.
 
