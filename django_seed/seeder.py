@@ -181,7 +181,7 @@ class Seeder(object):
         self.quantities[klass] = number
         self.orders.append(klass)
 
-    def execute(self, using=None):
+    def execute(self, using=None, inserted_entities={}):
         """
         Populate the database using all the Entity classes previously added.
 
@@ -191,7 +191,6 @@ class Seeder(object):
         if not using:
             using = self.get_connection()
 
-        inserted_entities = {}
         for klass in self.orders:
             number = self.quantities[klass]
             if klass not in inserted_entities:
