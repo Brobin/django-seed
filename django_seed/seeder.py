@@ -31,11 +31,13 @@ class ModelSeeder(object):
     def build_one_relation(field, related_model, existing):
         def func(inserted):
             if related_model in inserted and inserted[related_model]:
-                pk = random.choice(
-                    list(set(inserted[related_model]) - existing))
-                existing.add(pk)
-                return related_model.objects.get(pk=pk)
-            elif not field.null:
+                unused = list(set(inserted[related_model]) - existing)
+                if unused:
+                    pk = random.choice(unused)
+                    existing.add(pk)
+                    return related_model.objects.get(pk=pk)
+
+            if not field.null:
                 message = 'Field {} cannot be null'.format(field)
                 raise SeederException(message)
 
