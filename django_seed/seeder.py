@@ -155,8 +155,6 @@ class Seeder(object):
         :param faker: Generator
         """
         self.faker = faker
-        self.entities = {}
-        self.quantities = {}
         self.orders = []
 
     def add_entity(self, model, number, customFieldFormatters=None):
@@ -179,10 +177,11 @@ class Seeder(object):
         if customFieldFormatters:
             model.field_formatters.update(customFieldFormatters)
         
-        klass = model.model
-        self.entities[klass] = model
-        self.quantities[klass] = number
-        self.orders.append(klass)
+        self.orders.append({
+            'klass': model.model,
+            'number': number,
+            'model': model,
+        })
 
     def execute(self, using=None, inserted_entities={}):
         """
@@ -194,12 +193,14 @@ class Seeder(object):
         if not using:
             using = self.get_connection()
 
-        for klass in self.orders:
-            number = self.quantities[klass]
+        for order in self.orders:
+            klass = order['klass']
+            number = order['number']
+
             if klass not in inserted_entities:
                 inserted_entities[klass] = []
             for i in range(0, number):
-                entity = self.entities[klass].execute(using, inserted_entities)
+                entity = order['model'].execute(using, inserted_entities)
                 inserted_entities[klass].append(entity)
 
         return inserted_entities
@@ -210,7 +211,7 @@ class Seeder(object):
         :rtype: Connection
         """
 
-        klass = self.entities.keys()
+        klass = [order['klass'] for order in self.orders]
         if not klass:
             message = 'No classed found. Did you add entities to the Seeder?'
             raise SeederException(message)
