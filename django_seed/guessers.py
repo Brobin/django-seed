@@ -1,9 +1,13 @@
+from datetime import timedelta
+
 from django.db.models import *
 from django.conf import settings
 from django.utils import timezone
 
+import pytz
 import random
 import re
+
 
 from .providers import Provider
 
@@ -15,7 +19,18 @@ def _timezone_format(value):
     :param value: The datetime value
     :return: A locale aware datetime
     """
-    return timezone.make_aware(value, timezone.get_current_timezone()) if getattr(settings, 'USE_TZ', False) else value
+    # Managing DST
+    # http://www.ilian.io/django-pytz-nonexistenttimeerror-and-ambiguoustimeerror/
+    if getattr(settings, 'USE_TZ', False):
+        time_zone = getattr(settings, 'TIME_ZONE',
+                            timezone.get_current_timezone())
+        try:
+            return timezone.make_aware(value, timezone=pytz.timezone(
+                time_zone))
+        except (pytz.NonExistentTimeError, pytz.AmbiguousTimeError):
+            return timezone.make_aware(value + timedelta(hours=1),
+                                       timezone=pytz.timezone(time_zone))
+    return value
 
 
 class NameGuesser(object):
