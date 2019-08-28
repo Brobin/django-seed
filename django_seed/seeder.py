@@ -6,6 +6,7 @@ from django.db.models.fields import AutoField
 from django_seed.exceptions import SeederException
 from django_seed.guessers import NameGuesser, FieldTypeGuesser
 
+
 class ModelSeeder(object):
     def __init__(self, model):
         """
@@ -13,12 +14,48 @@ class ModelSeeder(object):
         """
         self.model = model
         self.field_formatters = {}
+        self.unique_together = {}
+        self.unique = {}
 
-    @staticmethod
-    def build_relation(field, related_model):
+    def build_relation(self, field, related_model):
+        if field.opts.unique_together:
+            for uq_fields in field.opts.unique_together:
+                if uq_fields not in self.unique_together:
+                    self.unique_together[uq_fields] = []
+
+        if field.unique and field not in self.unique:
+            self.unique[field] = []
+
         def func(inserted):
             if related_model in inserted and inserted[related_model]:
                 pk = random.choice(inserted[related_model])
+
+                if field.unique:
+                    if pk in self.unique[field]:
+                        while pk in self.unique[field]:
+                            pk = random.choice(inserted[related_model])
+
+                    self.unique[field].append(pk)
+
+                for i, unq_fields in enumerate(self.unique_together):
+                    if field.name in unq_fields:
+
+                        if len(self.unique_together[unq_fields]) == 0 or \
+                                all(field.name in d and len(d.keys()) == 1 for d in self.unique_together[unq_fields]) \
+                                or all(len(d.keys()) == len(unq_fields) for d in self.unique_together[unq_fields]):
+                            self.unique_together[unq_fields].append({field.name: pk})
+
+                        else:
+                            for j, d in enumerate(self.unique_together[unq_fields]):
+                                if field.name not in d:
+                                    tmp_dict = {**d, field.name: pk}
+
+                                    while tmp_dict in self.unique_together[unq_fields]:
+                                        pk = random.choice(inserted[related_model])
+                                        tmp_dict[field.name] = pk
+
+                                    self.unique_together[unq_fields][j][field.name] = pk
+
                 return related_model.objects.get(pk=pk)
             else:
                 message = 'Field {} cannot be null'.format(field)
@@ -40,10 +77,10 @@ class ModelSeeder(object):
 
             field_name = field.name
 
-            if field.get_default(): 
+            if field.get_default() and not field.unique:
                 formatters[field_name] = field.get_default()
                 continue
-            
+
             if isinstance(field, (ForeignKey, ManyToManyField, OneToOneField)):
                 formatters[field_name] = self.build_relation(field, field.related_model)
                 continue
@@ -52,7 +89,7 @@ class ModelSeeder(object):
                 continue
 
             if not field.choices:
-                formatter = name_guesser.guess_format(field_name)
+                formatter = name_guesser.guess_format(field_name, field)
                 if formatter:
                     formatters[field_name] = formatter
                     continue
@@ -99,7 +136,6 @@ class ModelSeeder(object):
                 faker_data[data_field] = faker_data[data_field][:field.max_length]
 
         obj = manager.create(**faker_data)
-
         return obj.pk
 
 
@@ -132,7 +168,7 @@ class Seeder(object):
         model.field_formatters = model.guess_field_formatters(self.faker)
         if customFieldFormatters:
             model.field_formatters.update(customFieldFormatters)
-        
+
         klass = model.model
         self.entities[klass] = model
         self.quantities[klass] = number
