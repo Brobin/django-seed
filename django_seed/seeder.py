@@ -1,10 +1,10 @@
 import random
 
 from django.db.models import ForeignKey, ManyToManyField, OneToOneField
-from django.db.models.fields import AutoField
 
 from django_seed.exceptions import SeederException
 from django_seed.guessers import NameGuesser, FieldTypeGuesser
+
 
 class ModelSeeder(object):
     def __init__(self, model):
