@@ -152,7 +152,7 @@ MIT. See `LICENSE`_ for more details.
 
 .. |python| image:: https://img.shields.io/pypi/pyversions/django-seed.svg?style=flat-square
     :target: https://pypi.python.org/pypi/django-seed
-    :alt: Python 2.7, 3.x
+    :alt: Python 3.x
 
 .. |seed-logo| image:: assets/django_seed.png
     :alt: Django Seed
