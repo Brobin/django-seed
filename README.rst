@@ -105,6 +105,13 @@ Django-seed does not populate auto-incremented primary keys, instead ``seeder.ex
         <class 'faker.django.tests.Game'>: [1, 2, 3, 4, 5]
     }
 
+You may specify a different locale by passing it in the constructor of the seeder. Defaults to `settings.LANGUAGE_CODE`
+
+.. code-block:: python
+
+    seeder = Seed.seeder(locale='sv_SE')
+    seeder.faker.city()  # 'Västerås'
+
 
 -----
 Tests
