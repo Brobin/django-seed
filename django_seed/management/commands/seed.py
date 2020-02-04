@@ -37,8 +37,14 @@ class Command(AppCommand):
             seeder.add_entity(model, number)
             print('Seeding %i %ss' % (number, model.__name__))
 
-        pks = seeder.execute()
-        print(pks)
+        generated = seeder.execute()
+
+        for model, pks in generated.items():
+            for pk in pks:
+                print("Model {} generated record with primary key {}".format(
+                    model.__name__,
+                    pk
+                ))
 
     def dependencies(self, model):
         dependencies = set()
