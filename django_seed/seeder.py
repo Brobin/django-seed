@@ -1,7 +1,6 @@
 import random
 
 from django.db.models import ForeignKey, ManyToManyField, OneToOneField
-from django.db.models.fields import AutoField
 
 from django_seed.exceptions import SeederException
 from django_seed.guessers import NameGuesser, FieldTypeGuesser
@@ -44,15 +43,15 @@ class ModelSeeder(object):
 
             field_name = field.name
 
+            if field.primary_key:
+                continue
+
             if field.get_default():
                 formatters[field_name] = field.get_default()
                 continue
 
             if isinstance(field, (ForeignKey, ManyToManyField, OneToOneField)):
                 formatters[field_name] = self.build_relation(field, field.related_model)
-                continue
-
-            if isinstance(field, AutoField):
                 continue
 
             if not field.choices:
