@@ -1,10 +1,10 @@
 import random
 
 from django.db.models import ForeignKey, ManyToManyField, OneToOneField
-from django.db.models.fields import AutoField
 
 from django_seed.exceptions import SeederException
 from django_seed.guessers import NameGuesser, FieldTypeGuesser
+
 
 class ModelSeeder(object):
     def __init__(self, model):
@@ -40,15 +40,15 @@ class ModelSeeder(object):
 
             field_name = field.name
 
-            if field.get_default(): 
-                formatters[field_name] = field.get_default()
-                continue
-            
-            if isinstance(field, (ForeignKey, ManyToManyField, OneToOneField)):
-                formatters[field_name] = self.build_relation(field, field.related_model)
+            if field.primary_key:
                 continue
 
-            if isinstance(field, AutoField):
+            if field.get_default():
+                formatters[field_name] = field.get_default()
+                continue
+
+            if isinstance(field, (ForeignKey, ManyToManyField, OneToOneField)):
+                formatters[field_name] = self.build_relation(field, field.related_model)
                 continue
 
             if not field.choices:
@@ -122,7 +122,7 @@ class Seeder(object):
         :type model: Model
         :param number: int The number of entities to seed
         :type number: integer
-        :param customFieldFormatters: optional dict with field as key and 
+        :param customFieldFormatters: optional dict with field as key and
         callable as value
         :type customFieldFormatters: dict or None
         """
@@ -132,7 +132,7 @@ class Seeder(object):
         model.field_formatters = model.guess_field_formatters(self.faker)
         if customFieldFormatters:
             model.field_formatters.update(customFieldFormatters)
-        
+
         klass = model.model
         self.entities[klass] = model
         self.quantities[klass] = number
