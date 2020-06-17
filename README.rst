@@ -65,6 +65,18 @@ Ex: Seed 15 of each model for the app ``api``:
 
 That's it! Now you have 15 of each model seeded into your database.
 
+.. code-block:: bash
+
+    $ python manage.py seed api --number=15 --seeder "MyModel.my_field" "1.1.1.1"
+    
+This is an CLI equivalent to this:
+
+.. code-block:: python
+
+    seeder.add_entity(MyModel, 10, {
+        'my_field': '1.1.1.1',
+    })
+
 Using with code
 ----------------
 
