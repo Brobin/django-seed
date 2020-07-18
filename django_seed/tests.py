@@ -147,6 +147,29 @@ class SeederTestCase(TestCase):
         seeder = Seeder(faker)
         seeder.add_entity(Game, 10)
         self.assertEqual(len(seeder.execute()[Game]), 10)
+        self.assertEqual(len(Game.objects.all()), 10)
+
+        seeder.add_entity(Game, 40)
+        self.assertEqual(len(seeder.execute()[Game]), 40)
+        self.assertEqual(len(Game.objects.all()), 50)
+
+    def test_same_model_unique_fields(self):
+        faker = fake
+        seeder = Seeder(faker)
+        seeder.add_entity(Game, 10, {
+            "title": "First Game"
+        })
+
+        seeder.add_entity(Game, 20, {
+            "title": "Second Game"
+        })
+
+        inserted_pks = seeder.execute()
+
+        self.assertEqual(len(inserted_pks[Game]), 30)
+        self.assertEqual(len(Game.objects.all()), 30)
+        self.assertEqual(Game.objects.get(id=inserted_pks[Game][0]).title, "First Game")
+        self.assertEqual(Game.objects.get(id=inserted_pks[Game][-1]).title, "Second Game")
 
     def test_guesser(self):
         faker = fake
