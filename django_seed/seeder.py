@@ -109,8 +109,6 @@ class Seeder(object):
         :param faker: Generator
         """
         self.faker = faker
-        self.entities = {}
-        self.quantities = {}
         self.orders = []
 
     def add_entity(self, model, number, customFieldFormatters=None):
@@ -126,17 +124,21 @@ class Seeder(object):
         callable as value
         :type customFieldFormatters: dict or None
         """
-        if not isinstance(model, ModelSeeder):
-            model = ModelSeeder(model)
+        
+        # We always want to make a new ModelSeeder in case multiple unique
+        # orders for a specific model are created before a single execute
+        model = ModelSeeder(model)
 
         model.field_formatters = model.guess_field_formatters(self.faker)
         if customFieldFormatters:
             model.field_formatters.update(customFieldFormatters)
 
-        klass = model.model
-        self.entities[klass] = model
-        self.quantities[klass] = number
-        self.orders.append(klass)
+        order = {
+            "klass": model.model,
+            "quantity": number,
+            "entity": model,
+        }
+        self.orders.append(order)
 
     def execute(self, using=None):
         """
@@ -149,13 +151,17 @@ class Seeder(object):
             using = self.get_connection()
 
         inserted_entities = {}
-        for klass in self.orders:
-            number = self.quantities[klass]
+        while len(self.orders):
+            order = self.orders.pop(0)
+            number = order["quantity"]
+            klass = order["klass"]
+            entity = order["entity"]
+
             if klass not in inserted_entities:
                 inserted_entities[klass] = []
             for i in range(0, number):
-                entity = self.entities[klass].execute(using, inserted_entities)
-                inserted_entities[klass].append(entity)
+                executed_entity = entity.execute(using, inserted_entities)
+                inserted_entities[klass].append(executed_entity)
 
         return inserted_entities
 
@@ -165,10 +171,10 @@ class Seeder(object):
         :rtype: Connection
         """
 
-        klass = self.entities.keys()
-        if not klass:
+        klasses = [order["klass"] for order in self.orders]
+        if not klasses:
             message = 'No classed found. Did you add entities to the Seeder?'
             raise SeederException(message)
-        klass = list(klass)[0]
+        klass = list(klasses)[0]
 
         return klass.objects._db
