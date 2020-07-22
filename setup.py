@@ -56,7 +56,7 @@ setup(
         'Topic :: Utilities',
     ],
     keywords='faker fixtures data test django seed',
-    long_description=open('README.rst', 'r').read(),
+    long_description=open('README.rst', 'rb').read().decode('utf-8'),
     install_requires=['django>=1.11', 'Faker>=0.7.7'],
     tests_require=['django>=1.11', 'fake-factory>=0.5.0', 'coverage', 'django-nose'],
     test_suite="runtests.runtests",
