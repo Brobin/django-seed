@@ -8,7 +8,7 @@ Django-seed allows you to write code to generate models, and seed your database 
 
 ---------------
 
-|python| |pypi| |travis| |coveralls| |license|
+|python| |pypi| |actions| |coveralls| |license| |downloads|
 
 ---------------
 
@@ -145,9 +145,9 @@ MIT. See `LICENSE`_ for more details.
     :target: https://pypi.python.org/pypi/django-seed
     :alt: pypi
 
-.. |travis| image:: https://img.shields.io/travis/Brobin/django-seed.svg?style=flat-square
-    :target: http://travis-ci.org/Brobin/django-seed
-    :alt: Travis Build
+.. |actions| image:: https://github.com/Brobin/django-seed/workflows/Test/badge.svg
+    :target: https://github.com/Brobin/django-seed
+    :alt: Actions Build
     
 .. |coveralls| image:: https://img.shields.io/coveralls/Brobin/django-seed.svg?style=flat-square
     :target: https://coveralls.io/r/Brobin/django-seed
@@ -163,3 +163,7 @@ MIT. See `LICENSE`_ for more details.
 
 .. |seed-logo| image:: assets/django_seed.png
     :alt: Django Seed
+
+.. |downloads| image:: https://pepy.tech/badge/django-seed
+    :target: https://pepy.tech/project/django-seed
+    :alt: downloads

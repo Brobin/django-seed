@@ -1,0 +1,37 @@
+# This workflow will install Python dependencies and run tests with a variety of Python versions
+
+name: Test
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.5, 3.6, 3.7, 3.8]
+        django-version: [1.11, 2.2, 3.0]
+        exclude:
+          - python-version: 3.5
+            django-version: 3.0
+          - python-version: 3.8
+            django-version: 1.11
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          pip install -q Django==${{ matrix.django-version }}
+          pip install -e git://github.com/django-nose/django-nose.git#egg=django-nose
+          pip install -q -e .
+      - name: Run tests
+        run: |
+          python runtests.py
