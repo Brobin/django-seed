@@ -11,7 +11,7 @@ Django-seed allows you to write code to generate models, and seed your database 
 |python| |pypi| |actions| |coveralls| |license| |downloads|
 
 ---------------
-
+test
 * `Installation`_
 * `Configuration`_
 * `Usage`_
