@@ -43,7 +43,7 @@ def django_setting(name, value):
     finally:
         setattr(settings, name, original_value)
 
-
+# Game models
 class Game(models.Model):
     title = models.CharField(max_length=200)
     slug = models.SlugField(max_length=200)
@@ -88,6 +88,7 @@ class Action(models.Model):
     actor = models.ForeignKey(to=Player,on_delete=models.CASCADE,related_name='actions', null=False)
     target = models.ForeignKey(to=Player,on_delete=models.CASCADE, related_name='enemy_actions+', null=True)
 
+# Product models
 class Product(models.Model):
     name = models.CharField(max_length=100)
     short_description = models.CharField(max_length=100, default=DEF_SD)
@@ -100,6 +101,34 @@ class Customer(models.Model):
     address = models.CharField(max_length=50)
     created_at = models.DateTimeField(auto_now=False, auto_now_add=True)
     comments = models.TextField(max_length=500)
+
+# Reporter models
+class Pen(models.Model):
+    ink_left = models.PositiveIntegerField()
+
+
+class Reporter(models.Model):
+    name = models.CharField(max_length=100)
+    pen = models.OneToOneField(
+        Pen,
+        on_delete=models.CASCADE,
+        primary_key=True,
+    )
+
+
+class Article(models.Model):
+    title = models.CharField(max_length=100)
+    reporter = models.ForeignKey(Reporter, on_delete=models.CASCADE)
+
+
+class Newspaper(models.Model):
+    name = models.CharField(max_length=100)
+    address = models.CharField(max_length=80)
+
+    # A reporter works for multiple newspapers
+    reporters = models.ManyToManyField(Reporter)
+
+
 
 
 class NameGuesserTestCase(TestCase):
@@ -138,6 +167,10 @@ class FieldTypeGuesserTestCase(TestCase):
             value = generator(datetime.now())
             self.assertFalse(timezone.is_aware(value))
 
+    # TODO: Find model field with _default_hint to use in test
+    # def test_guess_not_in_format(self):
+    #     generator = self.instance.guess_format(JSONField())
+    #     self.assertEquals(generator(), '{}')
 
 
 class SeederTestCase(TestCase):
@@ -383,3 +416,14 @@ class LengthRulesTestCase(TestCase):
         self.assertTrue(len(DEF_LD) == len(product.description))
 
 
+class RelationshipTestCase(TestCase):
+
+    def test_one_to_one(self):
+        faker = fake
+        seeder = Seeder(faker)
+        seeder.add_entity(Pen, 1)
+        seeder.add_entity(Reporter, 1)
+
+        seeder.execute()
+        print(Reporter.objects.all())
+        # self.assertEqual(Reporter.objects.get(id=1), 1)

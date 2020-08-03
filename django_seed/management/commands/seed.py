@@ -2,8 +2,10 @@
 from django.core.management.base import AppCommand
 from django_seed import Seed
 from django_seed.exceptions import SeederCommandError
-from django_seed.toposort import toposort_flatten
+from toposort import toposort_flatten
 from optparse import make_option
+from pprint import pprint
+import uuid, inspect
 
 
 class Command(AppCommand):
@@ -46,20 +48,36 @@ class Command(AppCommand):
                     pk
                 ))
 
-    def dependencies(self, model):
-        dependencies = set()
+    def get_model_dependencies(self, models):
+        dep_dict = {}
+        dep_class_map = {}
 
-        for field in model._meta.get_fields():
-            if field.many_to_one is True and field.concrete and field.blank is False:
-                dependencies.add(field.related_model)
+        for model in models:
+            dependencies = set()
+            model_replacement = f'{model.__module__}.{model.__name__}'
 
-        return dependencies
+            if model_replacement not in dep_class_map:
+                dep_class_map[model_replacement] = model
+
+            for field in model._meta.get_fields():
+                if field.many_to_one is True and field.concrete and field.blank is False:
+                    related_model = field.related_model
+                    related_model_type = f'{related_model.__module__}.{related_model.__name__}'
+                    replacement = related_model_type
+
+                    if related_model_type not in dep_class_map:
+                        dep_class_map[related_model_type] = related_model
+
+                    dependencies.add(replacement)
+
+            dep_dict[model_replacement] = dependencies
+
+        return (dep_dict, dep_class_map)
 
     def sorted_models(self, app_config):
-        dependencies = {}
-        for model in app_config.get_models():
-            dependencies[model] = self.dependencies(model)
+        dep_dict, dep_class_map = self.get_model_dependencies(app_config.get_models())
+
         try:
-            return toposort_flatten(dependencies)
+            return [dep_class_map[x] for x in toposort_flatten(dep_dict)]
         except ValueError as ex:
             raise SeederCommandError(str(ex))
