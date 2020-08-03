@@ -1,4 +1,3 @@
-
 from django.core.management.base import AppCommand
 from django_seed import Seed
 from django_seed.exceptions import SeederCommandError
@@ -52,7 +51,10 @@ class Command(AppCommand):
 
         for model in models:
             dependencies = set()
-            model_replacement = f'{model.__module__}.{model.__name__}'
+            model_replacement = '{}.{}'.format(
+                model.__module__,
+                model.__name__
+            )
 
             if model_replacement not in dep_class_map:
                 dep_class_map[model_replacement] = model
@@ -62,7 +64,10 @@ class Command(AppCommand):
                     field.concrete and field.blank is False):
 
                     related_model = field.related_model
-                    related_model_type = f'{related_model.__module__}.{related_model.__name__}'
+                    related_model_type = '{}.{}'.format(
+                        related_model.__module__,
+                        related_model.__name__
+                    )
                     replacement = related_model_type
 
                     if related_model_type not in dep_class_map:

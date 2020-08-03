@@ -4,4 +4,3 @@ toposort
 coverage
 django-nose
 nose
-django-mysql

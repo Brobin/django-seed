@@ -123,6 +123,7 @@ class Article(models.Model):
 class Newspaper(models.Model):
     name = models.CharField(max_length=100)
     address = models.CharField(max_length=80)
+    articles = models.ForeignKey(Article, on_delete=models.CASCADE)
 
     # A reporter works for multiple newspapers
     reporters = models.ManyToManyField(Reporter)
@@ -474,7 +475,7 @@ class RelationshipTestCase(TestCase):
 
     # TODO: This test should work once
     # https://github.com/Brobin/django-seed/issues/79 is resolved
-    
+
     # def test_many_to_many_separate_executes(self):
     #     faker = fake
     #     seeder = Seeder(faker)
