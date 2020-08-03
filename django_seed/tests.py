@@ -112,7 +112,6 @@ class Reporter(models.Model):
     pen = models.OneToOneField(
         Pen,
         on_delete=models.CASCADE,
-        primary_key=True,
     )
 
 
@@ -127,8 +126,6 @@ class Newspaper(models.Model):
 
     # A reporter works for multiple newspapers
     reporters = models.ManyToManyField(Reporter)
-
-
 
 
 class NameGuesserTestCase(TestCase):
@@ -421,9 +418,77 @@ class RelationshipTestCase(TestCase):
     def test_one_to_one(self):
         faker = fake
         seeder = Seeder(faker)
+
         seeder.add_entity(Pen, 1)
         seeder.add_entity(Reporter, 1)
 
         seeder.execute()
-        print(Reporter.objects.all())
-        # self.assertEqual(Reporter.objects.get(id=1), 1)
+        self.assertEqual(Reporter.objects.get(id=1).pen.pk, 1)
+
+    def test_one_to_one_wrong_order(self):
+        faker = fake
+        seeder = Seeder(faker)
+
+        seeder.add_entity(Reporter, 1)
+        seeder.add_entity(Pen, 1)
+
+        self.assertRaises(SeederException, seeder.execute)
+
+    def test_many_to_one(self):
+        faker = fake
+        seeder = Seeder(faker)
+        
+        seeder.add_entity(Pen, 1)
+        seeder.add_entity(Reporter, 1)
+        seeder.add_entity(Article, 1)
+
+        seeder.execute()
+        self.assertNotEqual(Reporter.objects.get(id=1), None)
+        self.assertNotEqual(Article.objects.get(id=1), None)
+        self.assertEqual(Article.objects.get(id=1).reporter.pk, 1)
+
+    def test_many_to_one_wrong_order(self):
+        faker = fake
+        seeder = Seeder(faker)
+
+        seeder.add_entity(Article, 1)
+        seeder.add_entity(Pen, 1)
+        seeder.add_entity(Reporter, 1)
+
+        self.assertRaises(SeederException, seeder.execute)
+
+    def test_many_to_many(self):
+        faker = fake
+        seeder = Seeder(faker)
+        
+        seeder.add_entity(Pen, 1)
+        seeder.add_entity(Reporter, 1)
+        seeder.add_entity(Article, 1)
+        seeder.add_entity(Newspaper, 1)
+
+        results = seeder.execute()
+        self.assertNotEqual(Newspaper.objects.get(id=1), None)
+        self.assertNotEqual(Reporter.objects.get(id=1), None)
+        self.assertNotEqual(Article.objects.get(id=1), None)
+        self.assertEqual(len(Reporter.objects.get(id=1).newspaper_set.all()), 1)
+
+    # TODO: This test should work once
+    # https://github.com/Brobin/django-seed/issues/79 is resolved
+    
+    # def test_many_to_many_separate_executes(self):
+    #     faker = fake
+    #     seeder = Seeder(faker)
+
+    #     seeder.add_entity(Pen, 1)
+    #     seeder.add_entity(Reporter, 1)
+    #     seeder.add_entity(Article, 1)
+
+    #     seeder.execute()
+        
+    #     seeder.add_entity(Newspaper, 1)
+
+    #     seeder.execute()
+    #     self.assertNotEqual(Newspaper.objects.get(id=1), None)
+    #     self.assertNotEqual(Reporter.objects.get(id=1), None)
+    #     self.assertNotEqual(Article.objects.get(id=1), None)
+    #     self.assertEqual(len(Reporter.objects.get(id=1).newspaper_set.all()), 1)

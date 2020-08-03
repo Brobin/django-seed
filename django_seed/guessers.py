@@ -106,5 +106,8 @@ class FieldTypeGuesser(object):
             return lambda x: _timezone_format(faker.date_time())
         if isinstance(field, DateField): return lambda x: faker.date()
         if isinstance(field, TimeField): return lambda x: faker.time()
+
+        # TODO: This should be fine, but I can't find any models that I can use
+        # in a simple test case.
         if hasattr(field, '_default_hint'): return lambda x: field._default_hint[1]
         raise AttributeError(field)

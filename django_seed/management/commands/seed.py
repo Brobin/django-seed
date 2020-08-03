@@ -4,8 +4,6 @@ from django_seed import Seed
 from django_seed.exceptions import SeederCommandError
 from toposort import toposort_flatten
 from optparse import make_option
-from pprint import pprint
-import uuid, inspect
 
 
 class Command(AppCommand):
@@ -60,7 +58,9 @@ class Command(AppCommand):
                 dep_class_map[model_replacement] = model
 
             for field in model._meta.get_fields():
-                if field.many_to_one is True and field.concrete and field.blank is False:
+                if ((field.many_to_one is True or field.many_to_many is True or field.one_to_one is True) and
+                    field.concrete and field.blank is False):
+
                     related_model = field.related_model
                     related_model_type = f'{related_model.__module__}.{related_model.__name__}'
                     replacement = related_model_type

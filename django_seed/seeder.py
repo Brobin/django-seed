@@ -1,4 +1,4 @@
-import random
+import random, logging
 
 from django.db.models import ForeignKey, ManyToManyField, OneToOneField
 
@@ -49,14 +49,24 @@ class ModelSeeder(object):
             if related_model in inserted and inserted[related_model]:
                 max_relations = min(
                     10, round(len(inserted[related_model]) / 5) + 1)
-                return [
-                    related_model.objects.get(
-                        pk=random.choice(inserted[related_model]))
-                    for _ in range(random.randint(0, max_relations))
-                ]
+
+                return_list = []
+                for _ in range(random.randint(1, max_relations)):
+                    choice = random.choice(inserted[related_model])
+                    return_list.append(related_model.objects.get(
+                        pk=choice
+                    ))
+
+                return return_list
             elif not field.blank:
                 message = 'Field {} cannot be null'.format(field)
                 raise SeederException(message)
+            else:
+                logging.warn("Could not build many-to-many relationship for between {} and {}".format(
+                    field,
+                    related_model,
+                ))
+                return []
 
         return func
 
@@ -207,6 +217,8 @@ class Seeder(object):
             number = order["quantity"]
             klass = order["klass"]
             entity = order["entity"]
+
+            logging.debug("Creating {} of {}".format(number, klass))
 
             if klass not in inserted_entities:
                 inserted_entities[klass] = []
