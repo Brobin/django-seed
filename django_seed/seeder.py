@@ -1,4 +1,4 @@
-import random
+import random, logging
 
 from django.db.models import ForeignKey, ManyToManyField, OneToOneField
 
@@ -13,6 +13,7 @@ class ModelSeeder(object):
         """
         self.model = model
         self.field_formatters = {}
+        self.many_relations = {}
 
     @staticmethod
     def build_relation(field, related_model):
@@ -20,9 +21,52 @@ class ModelSeeder(object):
             if related_model in inserted and inserted[related_model]:
                 pk = random.choice(inserted[related_model])
                 return related_model.objects.get(pk=pk)
-            else:
+            elif not field.null:
                 message = 'Field {} cannot be null'.format(field)
                 raise SeederException(message)
+
+        return func
+
+    @staticmethod
+    def build_one_relation(field, related_model, existing):
+        def func(inserted):
+            if related_model in inserted and inserted[related_model]:
+                unused = list(set(inserted[related_model]) - existing)
+                if unused:
+                    pk = random.choice(unused)
+                    existing.add(pk)
+                    return related_model.objects.get(pk=pk)
+
+            if not field.null:
+                message = 'Field {} cannot be null'.format(field)
+                raise SeederException(message)
+
+        return func
+
+    @staticmethod
+    def build_many_relation(field, related_model):
+        def func(inserted):
+            if related_model in inserted and inserted[related_model]:
+                max_relations = min(
+                    10, round(len(inserted[related_model]) / 5) + 1)
+
+                return_list = []
+                for _ in range(random.randint(1, max_relations)):
+                    choice = random.choice(inserted[related_model])
+                    return_list.append(related_model.objects.get(
+                        pk=choice
+                    ))
+
+                return return_list
+            elif not field.blank:
+                message = 'Field {} cannot be null'.format(field)
+                raise SeederException(message)
+            else:
+                logging.warn("Could not build many-to-many relationship for between {} and {}".format(
+                    field,
+                    related_model,
+                ))
+                return []
 
         return func
 
@@ -47,8 +91,15 @@ class ModelSeeder(object):
                 formatters[field_name] = field.get_default()
                 continue
 
-            if isinstance(field, (ForeignKey, ManyToManyField, OneToOneField)):
-                formatters[field_name] = self.build_relation(field, field.related_model)
+            if isinstance(field, OneToOneField):
+                existing = set()
+                formatters[field_name] = self.build_one_relation(
+                    field, field.related_model, existing)
+                continue
+
+            if isinstance(field, ForeignKey):
+                formatters[field_name] = self.build_relation(
+                    field, field.related_model)
                 continue
 
             if not field.choices:
@@ -61,6 +112,10 @@ class ModelSeeder(object):
             if formatter:
                 formatters[field_name] = formatter
                 continue
+
+        for field in self.model._meta.many_to_many:
+            self.many_relations[field.name] = self.build_many_relation(
+                field, field.related_model)
 
         return formatters
 
@@ -100,6 +155,12 @@ class ModelSeeder(object):
 
         obj = manager.create(**faker_data)
 
+        for field, list in self.many_relations.items():
+            list = list(inserted_entities)
+            if list:
+                for related_obj in list:
+                    getattr(obj, field).add(related_obj)
+
         return obj.pk
 
 
@@ -124,7 +185,7 @@ class Seeder(object):
         callable as value
         :type customFieldFormatters: dict or None
         """
-        
+
         # We always want to make a new ModelSeeder in case multiple unique
         # orders for a specific model are created before a single execute
         model = ModelSeeder(model)
@@ -140,7 +201,7 @@ class Seeder(object):
         }
         self.orders.append(order)
 
-    def execute(self, using=None):
+    def execute(self, using=None, inserted_entities={}):
         """
         Populate the database using all the Entity classes previously added.
 
@@ -156,6 +217,8 @@ class Seeder(object):
             number = order["quantity"]
             klass = order["klass"]
             entity = order["entity"]
+
+            logging.debug("Creating {} of {}".format(number, klass))
 
             if klass not in inserted_entities:
                 inserted_entities[klass] = []

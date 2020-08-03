@@ -1,5 +1,6 @@
 django
 Faker
+toposort
 coverage
 django-nose
 nose
