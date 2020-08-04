@@ -30,7 +30,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -q Django==${{ matrix.django-version }}
-          pip install -e git://github.com/django-nose/django-nose.git#egg=django-nose
+          pip install -r requirements-test.txt
           pip install -q -e .
       - name: Run tests
         run: |

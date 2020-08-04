@@ -3,6 +3,7 @@ import random
 from contextlib import contextmanager
 from datetime import datetime
 
+from django import VERSION as django_version
 from django.conf import settings
 from django.core.management import call_command
 from django.core.validators import validate_comma_separated_integer_list
@@ -22,6 +23,7 @@ try:
     from django.utils.unittest import TestCase
 except:
     from django.test import TestCase
+from unittest import skipIf
 
 fake = Faker()
 
@@ -239,9 +241,11 @@ class SeederTestCase(TestCase):
         players = Player.objects.all()
         self.assertTrue(any([self.valid_player(p) for p in players]))
 
+    @skipIf(django_version[0] < 2, "JSONField does not work with Django 1.11")
     def test_not_covered_fields(self):
         """
-        Tell the django-seed how to work with fields which are not covered by the code. Avoids AttributeError(field).
+        Tell the django-seed how to work with fields which are
+        not covered by the code. Avoids AttributeError(field).
         :return:
         """
         faker = fake
@@ -344,7 +348,7 @@ class APISeedTestCase(TestCase):
 class SeedCommandTestCase(TestCase):
 
     def test_seed_command(self):
-        call_command('seed', 'django_seed', number=10, exclude_models=[NotCoveredFields])
+        call_command('seed', 'django_seed', number=10)
 
     def test_invalid_number_arg(self):
         try:
