@@ -1,25 +1,29 @@
+import random
+
 from contextlib import contextmanager
 from datetime import datetime
 
+from django import VERSION as django_version
+from django.conf import settings
+from django.core.management import call_command
+from django.core.validators import validate_comma_separated_integer_list
+from django.db import models
 from django.utils import timezone
-from faker import Faker
 
 from django_seed.guessers import NameGuesser, FieldTypeGuesser
 from django_seed.seeder import Seeder
 from django_seed.exceptions import SeederException, SeederCommandError
 from django_seed import Seed
 
-import random
-
-from django.db import models
-from django.conf import settings
-from django.core.management import call_command
+from faker import Faker
+from alphabet_detector import AlphabetDetector
+from jsonfield import JSONField
 
 try:
     from django.utils.unittest import TestCase
 except:
     from django.test import TestCase
-
+from unittest import skipIf
 
 fake = Faker()
 
@@ -67,19 +71,19 @@ class Player(models.Model):
     score = models.BigIntegerField()
     last_login_at = models.DateTimeField()
     game = models.ForeignKey(to=Game, on_delete=models.CASCADE)
-    ip = models.IPAddressField()
-    achievements = models.CommaSeparatedIntegerField(max_length=1000)
+    ip = models.GenericIPAddressField()
+    achievements = models.CharField(validators=[validate_comma_separated_integer_list], max_length=1000)
     friends = models.PositiveIntegerField()
     balance = models.FloatField()
 
 class Action(models.Model):
-    ACTION_FIRE ='fire'
-    ACTION_MOVE ='move'
-    ACTION_STOP ='stop'
+    ACTION_FIRE = 'fire'
+    ACTION_MOVE = 'move'
+    ACTION_STOP = 'stop'
     ACTIONS = (
-        (ACTION_FIRE,'Fire'),
-        (ACTION_MOVE,'Move'),
-        (ACTION_STOP,'Stop'),
+        (ACTION_FIRE, 'Fire'),
+        (ACTION_MOVE, 'Move'),
+        (ACTION_STOP, 'Stop'),
     )
     name = models.CharField(max_length=4, choices=ACTIONS)
     executed_at = models.DateTimeField()
@@ -129,6 +133,10 @@ class Newspaper(models.Model):
     reporters = models.ManyToManyField(Reporter)
 
 
+class NotCoveredFields(models.Model):
+    json = JSONField()
+
+
 class NameGuesserTestCase(TestCase):
 
     def setUp(self):
@@ -146,7 +154,6 @@ class NameGuesserTestCase(TestCase):
             for name in test_names:
                 value = self.instance.guess_format(name)(datetime.now())
                 self.assertFalse(timezone.is_aware(value))
-
 
 
 class FieldTypeGuesserTestCase(TestCase):
@@ -169,7 +176,6 @@ class FieldTypeGuesserTestCase(TestCase):
     # def test_guess_not_in_format(self):
     #     generator = self.instance.guess_format(JSONField())
     #     self.assertEquals(generator(), '{}')
-
 
 class SeederTestCase(TestCase):
 
@@ -215,7 +221,6 @@ class SeederTestCase(TestCase):
         })
         self.assertEqual(len(seeder.execute()[Game]), title_fake.count)
 
-
     def valid_player(self, player):
         p = player
         return 0 <= p.score <= 1000 and '@' in p.nickname
@@ -223,18 +228,42 @@ class SeederTestCase(TestCase):
     def test_formatter(self):
         faker = fake
         seeder = Seeder(faker)
-        seeder.add_entity(Game,5)
+        seeder.add_entity(Game, 5)
         seeder.add_entity(Player, 10, {
-            'score': lambda x: random.randint(0,1000),
+            'score': lambda x: random.randint(0, 1000),
             'nickname': lambda x: fake.email()
         })
-        seeder.add_entity(Action,30)
+        seeder.add_entity(Action, 30)
         inserted_pks = seeder.execute()
         self.assertTrue(len(inserted_pks[Game]) == 5)
         self.assertTrue(len(inserted_pks[Player]) == 10)
 
         players = Player.objects.all()
         self.assertTrue(any([self.valid_player(p) for p in players]))
+
+    @skipIf(django_version[0] < 2, "JSONField does not work with Django 1.11")
+    def test_not_covered_fields(self):
+        """
+        Tell the django-seed how to work with fields which are
+        not covered by the code. Avoids AttributeError(field).
+        :return:
+        """
+        faker = fake
+        seeder = Seeder(faker)
+        seeder.add_entity(NotCoveredFields, 10, {
+            'json': lambda x: {seeder.faker.domain_name(): {'description': seeder.faker.text()}},
+        })
+        inserted_pks = seeder.execute()
+        self.assertTrue(len(inserted_pks[NotCoveredFields]) == 10)
+        self.assertTrue(all([field.json for field in NotCoveredFields.objects.all()]))
+
+    def test_locale(self):
+        ad = AlphabetDetector()
+        faker = Faker('ru_RU')
+        seeder = Seeder(faker)
+        seeder.add_entity(Game, 5)
+        seeder.execute()
+        self.assertTrue(all([ad.is_cyrillic(game.title) for game in Game.objects.all()]))
 
     def test_null_foreign_key(self):
         faker = fake
@@ -255,7 +284,7 @@ class SeederTestCase(TestCase):
             self.assertTrue(isinstance(e, SeederException))
 
     def test_auto_now_add(self):
-        date =  datetime(1957, 3, 6, 13, 13)
+        date = datetime(1957, 3, 6, 13, 13)
         faker = fake
         seeder = Seeder(faker)
         seeder.add_entity(Game, 10, {
@@ -267,7 +296,7 @@ class SeederTestCase(TestCase):
         self.assertTrue(all(game.created_at == date for game in games))
 
     def test_auto_now(self):
-        date =  datetime(1957, 3, 6, 13, 13)
+        date = datetime(1957, 3, 6, 13, 13)
         faker = fake
         seeder = Seeder(faker)
         seeder.add_entity(Game, 10, {

@@ -30,7 +30,7 @@ def configure():
     )
 
 
-if not settings.configured: 
+if not settings.configured:
     configure()
 
 
