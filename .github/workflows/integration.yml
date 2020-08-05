@@ -1,0 +1,45 @@
+# This workflow will install Python dependencies and run tests with a variety of Python versions
+
+name: Integration tests
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  bootcamp-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.6
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.6
+      - name: Start Redis
+        uses: supercharge/redis-github-action@1.1.0
+        with:
+          redis-version: 5
+      - name: Clone bootcamp
+        run: |
+          git clone https://github.com/vitorfs/bootcamp ../bootcamp
+      - name: Install dependencies
+        run: |
+          pip install -r ../bootcamp/requirements/local.txt
+          pip install -q -e .
+      - name: Prepare bootcamp
+        run: |
+          cat .github/workflows/bootcamp/test-settings.py >> ../bootcamp/config/settings/test.py
+          cp ../bootcamp/.env.example ../bootcamp/.env
+          python ../bootcamp/manage.py migrate --settings config.settings.test
+      - name: Run tests
+        run: |
+          python ../bootcamp/manage.py seed news --settings config.settings.test
+          python ../bootcamp/manage.py seed articles --settings config.settings.test
+          python ../bootcamp/manage.py seed messenger --settings config.settings.test
+          python ../bootcamp/manage.py seed users --settings config.settings.test
+          python ../bootcamp/manage.py seed notifications --settings config.settings.test
+          python ../bootcamp/manage.py seed qa --settings config.settings.test
+          python ../bootcamp/manage.py seed search --settings config.settings.test
