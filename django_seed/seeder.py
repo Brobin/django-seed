@@ -14,14 +14,50 @@ class ModelSeeder(object):
         self.model = model
         self.field_formatters = {}
         self.many_relations = {}
+        self.unique_together = {}
+        self.unique = {}
 
-    @staticmethod
-    def build_relation(field, related_model):
+    def build_relation(self, field, related_model):
+        if field.opts.unique_together:
+            for uq_fields in field.opts.unique_together:
+                if uq_fields not in self.unique_together:
+                    self.unique_together[uq_fields] = []
+
+        if field.unique and field not in self.unique:
+            self.unique[field] = []
+
         def func(inserted):
             if related_model in inserted and inserted[related_model]:
                 pk = random.choice(inserted[related_model])
+
+                if field.unique:
+                    if pk in self.unique[field]:
+                        while pk in self.unique[field]:
+                            pk = random.choice(inserted[related_model])
+
+                    self.unique[field].append(pk)
+
+                for i, unq_fields in enumerate(self.unique_together):
+                    if field.name in unq_fields:
+
+                        if len(self.unique_together[unq_fields]) == 0 or \
+                                all(field.name in d and len(d.keys()) == 1 for d in self.unique_together[unq_fields]) \
+                                or all(len(d.keys()) == len(unq_fields) for d in self.unique_together[unq_fields]):
+                            self.unique_together[unq_fields].append({field.name: pk})
+
+                        else:
+                            for j, d in enumerate(self.unique_together[unq_fields]):
+                                if field.name not in d:
+                                    tmp_dict = {**d, field.name: pk}
+
+                                    while tmp_dict in self.unique_together[unq_fields]:
+                                        pk = random.choice(inserted[related_model])
+                                        tmp_dict[field.name] = pk
+
+                                    self.unique_together[unq_fields][j][field.name] = pk
+
                 return related_model.objects.get(pk=pk)
-            elif not field.null:
+            else:
                 message = 'Field {} cannot be null'.format(field)
                 raise SeederException(message)
 
@@ -98,7 +134,7 @@ class ModelSeeder(object):
             if field_name in formatters:
                 continue
 
-            if field.get_default():
+            if field.get_default() and not field.unique:
                 formatters[field_name] = field.get_default()
                 continue
 

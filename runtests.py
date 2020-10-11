@@ -20,8 +20,8 @@ def configure():
             'django_seed',
             'django_nose',
         ),
-        TEST_RUNNER = 'django_nose.NoseTestSuiteRunner',
-        NOSE_ARGS = [
+        TEST_RUNNER='django_nose.NoseTestSuiteRunner',
+        NOSE_ARGS=[
             '--with-coverage',
             '--cover-package=django_seed',
         ],
