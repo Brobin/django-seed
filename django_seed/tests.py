@@ -172,10 +172,12 @@ class FieldTypeGuesserTestCase(TestCase):
             value = generator(datetime.now())
             self.assertFalse(timezone.is_aware(value))
 
-    # TODO: Find model field with _default_hint to use in test
-    # def test_guess_not_in_format(self):
-    #     generator = self.instance.guess_format(JSONField())
-    #     self.assertEquals(generator(), '{}')
+    @skipIf(django_version[0] < 2, "JSONField does not work with Django 1.11")
+    def test_guess_not_in_format(self):
+        from django.contrib.postgres.fields.jsonb import JSONField
+        # postgres native JSONField has the _default_hint
+        generator = self.instance.guess_format(JSONField())
+        self.assertEquals(generator({}), '{}')
 
 class SeederTestCase(TestCase):
 
@@ -411,7 +413,7 @@ class LengthRulesTestCase(TestCase):
 
         customer = Customer.objects.get(id=_id[Customer][0])
 
-        self.assertTrue(len(customer.name) <= name_max_len, 
+        self.assertTrue(len(customer.name) <= name_max_len,
             "name with length {}, does not respect max length restriction of {}"
             .format(len(customer.name), name_max_len))
 
@@ -467,7 +469,7 @@ class RelationshipTestCase(TestCase):
     def test_many_to_one(self):
         faker = fake
         seeder = Seeder(faker)
-        
+
         seeder.add_entity(Pen, 1)
         seeder.add_entity(Reporter, 1)
         seeder.add_entity(Article, 1)
@@ -490,7 +492,7 @@ class RelationshipTestCase(TestCase):
     def test_many_to_many(self):
         faker = fake
         seeder = Seeder(faker)
-        
+
         seeder.add_entity(Pen, 1)
         seeder.add_entity(Reporter, 1)
         seeder.add_entity(Article, 1)
@@ -514,7 +516,7 @@ class RelationshipTestCase(TestCase):
     #     seeder.add_entity(Article, 1)
 
     #     seeder.execute()
-        
+
     #     seeder.add_entity(Newspaper, 1)
 
     #     seeder.execute()
