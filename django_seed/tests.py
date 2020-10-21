@@ -172,6 +172,7 @@ class FieldTypeGuesserTestCase(TestCase):
             value = generator(datetime.now())
             self.assertFalse(timezone.is_aware(value))
 
+    @skipIf(django_version[0] < 2, "JSONField does not work with Django 1.11")
     def test_guess_not_in_format(self):
         from django.contrib.postgres.fields.jsonb import JSONField
         # postgres native JSONField has the _default_hint
