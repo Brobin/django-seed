@@ -6,3 +6,4 @@ django-nose
 nose
 alphabet-detector
 jsonfield
+psycopg2-binary
