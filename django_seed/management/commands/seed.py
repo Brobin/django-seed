@@ -50,7 +50,9 @@ class Command(AppCommand):
         for model in self.sorted_models(app_config):
 
             if model.__name__ in seeders:
-                print(f"Custom seeder {seeders[model.__name__]}")
+                print("Custom seeder {}".format(
+                    seeders[model.__name__]
+                ))
                 seeder.add_entity(model, number, seeders[model.__name__])
 
             else:
