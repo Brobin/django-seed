@@ -3,6 +3,7 @@ from django_seed import Seed
 from django_seed.exceptions import SeederCommandError
 from toposort import toposort_flatten
 from optparse import make_option
+from collections import defaultdict
 
 
 class Command(AppCommand):
@@ -21,6 +22,9 @@ class Command(AppCommand):
         help_text = 'number of each model to seed (default 10)'
         parser.add_argument('--number', nargs='?', type=int, default=10, const=10, help=help_text)
 
+        help_text = '...'
+        parser.add_argument('--seeder', nargs=2, help=help_text, action="append")
+
     def handle_app_config(self, app_config, **options):
         if app_config.models_module is None:
             raise SeederCommandError('You must provide an app to seed')
@@ -30,10 +34,30 @@ class Command(AppCommand):
         except ValueError:
             raise SeederCommandError('The value of --number must be an integer')
 
+        # Gather seeders
+        seeders = defaultdict(dict)
+
+        print(options)
+
+        if options.get('seeder'):
+            for model_field, func in options['seeder']:
+                model, field = model_field.split('.')
+                seeders[model][field] = func
+
+        # Seed
         seeder = Seed.seeder()
 
         for model in self.sorted_models(app_config):
-            seeder.add_entity(model, number)
+
+            if model.__name__ in seeders:
+                print("Custom seeder {}".format(
+                    seeders[model.__name__]
+                ))
+                seeder.add_entity(model, number, seeders[model.__name__])
+
+            else:
+                seeder.add_entity(model, number)
+
             print('Seeding %i %ss' % (number, model.__name__))
 
         generated = seeder.execute()

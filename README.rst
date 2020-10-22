@@ -65,6 +65,20 @@ Ex: Seed 15 of each model for the app ``api``:
 
 That's it! Now you have 15 of each model seeded into your database.
 
+Should you need, you can also specify what value a particular field should have. For example, if you want to seed 15 of ``MyModel``, but you need ``my_field`` to be the same on all of them, you can do it like this: 
+
+.. code-block:: bash
+
+    $ python manage.py seed api --number=15 --seeder "MyModel.my_field" "1.1.1.1"
+    
+This is the command equivalent to doing it in Python:
+
+.. code-block:: python
+
+    seeder.add_entity(MyModel, 10, {
+        'my_field': '1.1.1.1',
+    })
+
 Using with code
 ----------------
 
