@@ -19,9 +19,6 @@ from faker import Faker
 from alphabet_detector import AlphabetDetector
 from jsonfield import JSONField
 
-from django.core import management
-from django.core.management.commands import loaddata
-
 try:
     from django.utils.unittest import TestCase
 except:
@@ -362,6 +359,14 @@ class SeedCommandTestCase(TestCase):
             self.assertTrue(isinstance(e, SeederCommandError))
         pass
 
+    def test_seed_command_forced_field(self):
+        call_command('seed', 'django_seed', '--seeder', 'Customer.name', 'BobbyLongName', '--number=12')
+
+        customers = Customer.objects.all()
+        
+        self.assertTrue(customers[0].name == 'BobbyLongName')
+        self.assertTrue(len(customers) == 12)
+
 class DefaultValueTestCase(TestCase):
 
     def test_default_value_guessed_by_field_type(self):
@@ -526,12 +531,3 @@ class RelationshipTestCase(TestCase):
     #     self.assertNotEqual(Reporter.objects.get(id=1), None)
     #     self.assertNotEqual(Article.objects.get(id=1), None)
     #     self.assertEqual(len(Reporter.objects.get(id=1).newspaper_set.all()), 1)
-    
-class CLITestCase(TestCase):
-    def test_default_with_max_length(self):
-        management.call_command('seed', 'django_seed', '--seeder', 'Customer.name', 'BobbyLongName', '--number=12')
-
-        customers = Customer.objects.all()
-        
-        self.assertTrue(customers[0].name == 'BobbyLongName')
-        self.assertTrue(len(customers) == 12)
