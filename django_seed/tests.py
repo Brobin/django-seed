@@ -9,6 +9,7 @@ from django.core.management import call_command
 from django.core.validators import validate_comma_separated_integer_list
 from django.db import models
 from django.utils import timezone
+from django.contrib.postgres.fields import ArrayField
 
 from django_seed.guessers import NameGuesser, FieldTypeGuesser
 from django_seed.seeder import Seeder
@@ -135,6 +136,17 @@ class Newspaper(models.Model):
 
 class NotCoveredFields(models.Model):
     json = JSONField()
+
+
+# This model should only be created when Postgres is being used
+class PhoneNumberPerson(models.Model):
+    phones = ArrayField(
+        base_field=models.CharField(
+            ("Phone Number"),
+            max_length=50,
+            unique=True
+        )
+    ) if 'postgres' in settings.DATABASES else None
 
 
 class NameGuesserTestCase(TestCase):
@@ -461,8 +473,8 @@ class RelationshipTestCase(TestCase):
         seeder.add_entity(Pen, 1)
         seeder.add_entity(Reporter, 1)
 
-        seeder.execute()
-        self.assertEqual(Reporter.objects.get(id=1).pen.pk, 1)
+        result = seeder.execute()
+        self.assertEqual(Reporter.objects.get(id=result[Reporter][0]).pen.pk, result[Pen][0])
 
     def test_one_to_one_wrong_order(self):
         faker = fake
@@ -481,10 +493,11 @@ class RelationshipTestCase(TestCase):
         seeder.add_entity(Reporter, 1)
         seeder.add_entity(Article, 1)
 
-        seeder.execute()
-        self.assertNotEqual(Reporter.objects.get(id=1), None)
-        self.assertNotEqual(Article.objects.get(id=1), None)
-        self.assertEqual(Article.objects.get(id=1).reporter.pk, 1)
+        results = seeder.execute()
+
+        self.assertNotEqual(Reporter.objects.get(id=results[Reporter][0]), None)
+        self.assertNotEqual(Article.objects.get(id=results[Article][0]), None)
+        self.assertEqual(Article.objects.get(id=results[Article][0]).reporter.pk, results[Reporter][0])
 
     def test_many_to_one_wrong_order(self):
         faker = fake
@@ -531,3 +544,14 @@ class RelationshipTestCase(TestCase):
     #     self.assertNotEqual(Reporter.objects.get(id=1), None)
     #     self.assertNotEqual(Article.objects.get(id=1), None)
     #     self.assertEqual(len(Reporter.objects.get(id=1).newspaper_set.all()), 1)
+
+class EdgeCaseFieldTestCase(TestCase):
+
+    @skipIf(settings.DATABASES['default']['ENGINE'] != 'django.db.backends.postgresql_psycopg2', "Postgres database is not configured, or the tests aren't being run with the `actions` argument.")
+    def test_postgres_array_field(self):
+        print("Aasdf")
+        faker = fake
+        seeder = Seeder(faker)
+        seeder.add_entity(NotCoveredFields, 1)
+
+        seeder.execute()
