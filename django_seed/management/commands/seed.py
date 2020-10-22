@@ -34,7 +34,7 @@ class Command(AppCommand):
         except ValueError:
             raise SeederCommandError('The value of --number must be an integer')
 
-        # Gather seeders.
+        # Gather seeders
         seeders = defaultdict(dict)
 
         print(options)
@@ -44,7 +44,7 @@ class Command(AppCommand):
                 model, field = model_field.split('.')
                 seeders[model][field] = func
 
-        # Seed.
+        # Seed
         seeder = Seed.seeder()
 
         for model in self.sorted_models(app_config):
