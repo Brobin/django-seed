@@ -1,0 +1,71 @@
+# This workflow will install Python dependencies and run tests with a variety of Python versions
+
+name: Integration tests
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  bootcamp-test:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.6
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.6
+      - name: Start Redis
+        uses: supercharge/redis-github-action@1.1.0
+        with:
+          redis-version: 5
+      - name: Clone bootcamp
+        run: |
+          git clone https://github.com/vitorfs/bootcamp ../bootcamp
+      - name: Install dependencies
+        run: |
+          pip install -r ../bootcamp/requirements/local.txt
+          pip install -q -e .
+      - name: Prepare bootcamp
+        run: |
+          cat .github/workflows/bootcamp/test-settings.py >> ../bootcamp/config/settings/test.py
+          cp ../bootcamp/.env.example ../bootcamp/.env
+          python ../bootcamp/manage.py migrate --settings config.settings.test
+      - name: Run tests
+        run: |
+          python ../bootcamp/manage.py seed news --settings config.settings.test
+          python ../bootcamp/manage.py seed articles --settings config.settings.test
+          python ../bootcamp/manage.py seed messenger --settings config.settings.test
+          python ../bootcamp/manage.py seed users --settings config.settings.test
+          python ../bootcamp/manage.py seed notifications --settings config.settings.test
+          python ../bootcamp/manage.py seed qa --settings config.settings.test
+          python ../bootcamp/manage.py seed search --settings config.settings.test
+
+  drum-test:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.6
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.6
+      - name: Clone drum
+        run: |
+          git clone https://github.com/stephenmcd/drum ../drum
+      - name: Install dependencies
+        run: |
+          $(cd ../drum; python setup.py install)
+          pip install -q -e .
+      - name: Prepare bootcamp
+        run: |
+          cat .github/workflows/drum/test-settings.py >> ../drum/drum/project_template/project_name/settings.py
+          python ../drum/drum/project_template/manage.py migrate --settings project_name.settings
+      - name: Run tests
+        run: |
+          python ../drum/drum/project_template/manage.py seed pages --settings project_name.settings
