@@ -1,6 +1,7 @@
 import random, logging
 
 from django.db.models import ForeignKey, ManyToManyField, OneToOneField
+from django.db import IntegrityError
 
 from django_seed.exceptions import SeederException
 from django_seed.guessers import NameGuesser, FieldTypeGuesser
@@ -230,8 +231,11 @@ class Seeder(object):
             if klass not in inserted_entities:
                 inserted_entities[klass] = []
             for i in range(0, number):
-                executed_entity = entity.execute(using, inserted_entities)
-                inserted_entities[klass].append(executed_entity)
+                try:
+                    executed_entity = entity.execute(using, inserted_entities)
+                    inserted_entities[klass].append(executed_entity)
+                except IntegrityError:
+                    pass
 
         return inserted_entities
 
