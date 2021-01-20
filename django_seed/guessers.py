@@ -3,6 +3,7 @@ from django.conf import settings
 from django.core.validators import validate_comma_separated_integer_list
 from django.utils import timezone
 from django.contrib.postgres.fields import ArrayField
+from django.contrib.gis.db.models import PointField
 
 import random
 import re
@@ -110,6 +111,7 @@ class FieldTypeGuesser(object):
         if isinstance(field, DateField): return lambda x: faker.date()
         if isinstance(field, TimeField): return lambda x: faker.time()
         if isinstance(field, ArrayField): return lambda x: [faker.text()]
+        if isinstance(field, PointField): return lambda x: Point(random.uniform(-180.0, 180.0),random.uniform(-90.0, 90.0))
 
         # TODO: This should be fine, but I can't find any models that I can use
         # in a simple test case.
