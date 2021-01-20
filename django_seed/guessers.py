@@ -113,7 +113,7 @@ class FieldTypeGuesser(object):
         if isinstance(field, ArrayField): return lambda x: [faker.text()]
         if isinstance(field, PointField): return lambda x: Point(random.uniform(-180.0, 180.0),random.uniform(-90.0, 90.0))
 
-        # TODO: This should be fine, but I can't find any models that I can use
+        # TODO: This should be fine, but I can't find any models that I can use.
         # in a simple test case.
         if hasattr(field, '_default_hint'): return lambda x: field._default_hint[1]
         raise AttributeError(field)
