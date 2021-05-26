@@ -575,7 +575,7 @@ class Animal(models.Model):
     ]
 
     first_color = models.SmallIntegerField(
-        choices = COLOR_CHOICES
+        choices = COLOR_CHOICES, unique=True
     )
 
     second_color = models.BigIntegerField(
@@ -609,7 +609,7 @@ class Choices(TestCase):
         faker = fake
         seeder = Seeder(faker)
 
-        seeder.add_entity(Animal, 10)
+        seeder.add_entity(Animal, 1)
 
         result = seeder.execute()
 
@@ -619,3 +619,22 @@ class Choices(TestCase):
         self.assertTrue(animal_object.first_color in [x[0] for x in Animal.COLOR_CHOICES])
         self.assertTrue(animal_object.second_color in [x[0] for x in Animal.COLOR_CHOICES])
         self.assertTrue(animal_object.farm <= 5)
+
+class Beans(models.Model):
+    id_num = models.IntegerField(unique=True)
+
+class UniquenessTestCase(TestCase):
+    def test_fields_with_choices(self):
+        faker = fake
+        seeder = Seeder(faker)
+
+        seeder.add_entity(Animal, 4)
+
+        result = seeder.execute()
+
+        # animal_object = Animal.objects.get(id=result[Animal][0])
+
+        # self.assertTrue(animal_object.species in [x[0] for x in Animal.SPECIES_CHOICES])
+        # self.assertTrue(animal_object.first_color in [x[0] for x in Animal.COLOR_CHOICES])
+        # self.assertTrue(animal_object.second_color in [x[0] for x in Animal.COLOR_CHOICES])
+        # self.assertTrue(animal_object.farm <= 5)

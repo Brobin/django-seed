@@ -4,6 +4,8 @@ from django.db.models import ForeignKey, ManyToManyField, OneToOneField
 
 from django_seed.exceptions import SeederException
 from django_seed.guessers import NameGuesser, FieldTypeGuesser
+from django.db.utils import IntegrityError
+from django.db import transaction
 
 
 class ModelSeeder(object):
@@ -22,7 +24,7 @@ class ModelSeeder(object):
                 pk = random.choice(inserted[related_model])
                 return related_model.objects.get(pk=pk)
             elif not field.null:
-                message = 'Field {} cannot be null'.format(field)
+                message = "Field {} cannot be null".format(field)
                 raise SeederException(message)
 
         return func
@@ -38,7 +40,7 @@ class ModelSeeder(object):
                     return related_model.objects.get(pk=pk)
 
             if not field.null:
-                message = 'Field {} cannot be null'.format(field)
+                message = "Field {} cannot be null".format(field)
                 raise SeederException(message)
 
         return func
@@ -47,25 +49,24 @@ class ModelSeeder(object):
     def build_many_relation(field, related_model):
         def func(inserted):
             if related_model in inserted and inserted[related_model]:
-                max_relations = min(
-                    10, round(len(inserted[related_model]) / 5) + 1)
+                max_relations = min(10, round(len(inserted[related_model]) / 5) + 1)
 
                 return_list = []
                 for _ in range(random.randint(1, max_relations)):
                     choice = random.choice(inserted[related_model])
-                    return_list.append(related_model.objects.get(
-                        pk=choice
-                    ))
+                    return_list.append(related_model.objects.get(pk=choice))
 
                 return return_list
             elif not field.blank:
-                message = 'Field {} cannot be null'.format(field)
+                message = "Field {} cannot be null".format(field)
                 raise SeederException(message)
             else:
-                logging.warn("Could not build many-to-many relationship for between {} and {}".format(
-                    field,
-                    related_model,
-                ))
+                logging.warn(
+                    "Could not build many-to-many relationship for between {} and {}".format(
+                        field,
+                        related_model,
+                    )
+                )
                 return []
 
         return func
@@ -105,12 +106,12 @@ class ModelSeeder(object):
             if isinstance(field, OneToOneField):
                 existing = set()
                 formatters[field_name] = self.build_one_relation(
-                    field, field.related_model, existing)
+                    field, field.related_model, existing
+                )
                 continue
 
             if isinstance(field, ForeignKey):
-                formatters[field_name] = self.build_relation(
-                    field, field.related_model)
+                formatters[field_name] = self.build_relation(field, field.related_model)
                 continue
 
             if not field.choices:
@@ -126,7 +127,8 @@ class ModelSeeder(object):
 
         for field in self.model._meta.many_to_many:
             self.many_relations[field.name] = self.build_many_relation(
-                field, field.related_model)
+                field, field.related_model
+            )
 
         return formatters
 
@@ -144,9 +146,9 @@ class ModelSeeder(object):
 
         def turn_off_auto_add(model):
             for field in model._meta.fields:
-                if getattr(field, 'auto_now', False):
+                if getattr(field, "auto_now", False):
                     field.auto_now = False
-                if getattr(field, 'auto_now_add', False):
+                if getattr(field, "auto_now_add", False):
                     field.auto_now_add = False
 
         manager = self.model.objects.db_manager(using=using)
@@ -162,7 +164,12 @@ class ModelSeeder(object):
             field = self.model._meta.get_field(data_field)
 
             if field.max_length and isinstance(faker_data[data_field], str):
-                faker_data[data_field] = faker_data[data_field][:field.max_length]
+                faker_data[data_field] = faker_data[data_field][: field.max_length]
+
+        from pprint import pprint
+        print("----------")
+        print(self.model)
+        pprint(faker_data)
 
         obj = manager.create(**faker_data)
 
@@ -200,7 +207,9 @@ class Seeder(object):
         # orders for a specific model are created before a single execute
         model = ModelSeeder(model)
 
-        model.field_formatters = model.guess_field_formatters(self.faker, formatters=customFieldFormatters)
+        model.field_formatters = model.guess_field_formatters(
+            self.faker, formatters=customFieldFormatters
+        )
 
         order = {
             "klass": model.model,
@@ -229,9 +238,35 @@ class Seeder(object):
 
             if klass not in inserted_entities:
                 inserted_entities[klass] = []
-            for i in range(0, number):
-                executed_entity = entity.execute(using, inserted_entities)
-                inserted_entities[klass].append(executed_entity)
+
+            # for i in range(0, number):
+            #     executed_entity = entity.execute(using, inserted_entities)
+            #     inserted_entities[klass].append(executed_entity)
+            countdown = number
+            retry_count = number * 2
+            completed_count = 0
+            last_error = None
+
+            while countdown > 0:
+                print("countdown")
+                try:
+                    with transaction.atomic():
+                        executed_entity = entity.execute(using, inserted_entities)
+                    inserted_entities[klass].append(executed_entity)
+                    countdown -= 1
+                    completed_count += 1
+                except IntegrityError as err:
+                    if retry_count > 0:
+                        retry_count -= 1
+                    else:
+                        countdown -= 1
+                    last_error = err
+
+            print(f"Warning: could not generate instance of {klass.__name__}, integrity error:")
+            print(last_error)
+
+            if retry_count == 0:
+                print(f"Warning: could only generate {completed_count} out of {number} instances of {klass.__name__}, integrity errors prevented the rest")
 
         return inserted_entities
 
@@ -243,7 +278,7 @@ class Seeder(object):
 
         klasses = [order["klass"] for order in self.orders]
         if not klasses:
-            message = 'No classes found. Did you add entities to the Seeder?'
+            message = "No classes found. Did you add entities to the Seeder?"
             raise SeederException(message)
         klass = list(klasses)[0]
 
