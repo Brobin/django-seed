@@ -555,3 +555,67 @@ class EdgeCaseFieldTestCase(TestCase):
         seeder.add_entity(NotCoveredFields, 1)
 
         seeder.execute()
+
+class Animal(models.Model):
+    SPECIES_CHOICES = [
+        ('DG', 'Dog'),
+        ('CT', 'Cat'),
+        ('EL', 'Elephant'),
+    ]
+
+    species = models.CharField(
+        max_length = 2,
+        choices = SPECIES_CHOICES
+    )
+
+    COLOR_CHOICES = [
+        (1, 'Black'),
+        (2, 'White'),
+        (3, 'Brown'),
+    ]
+
+    first_color = models.SmallIntegerField(
+        choices = COLOR_CHOICES
+    )
+
+    second_color = models.BigIntegerField(
+        choices = COLOR_CHOICES
+    )
+
+    FARM_CHOICES = [
+        (
+            "Alansburg",
+            (
+                (1, "Ruby's farm"),
+                (2, "Ben's farm"),
+            ),
+        ),
+        (
+            "Cornwall",
+            (
+                (3, "Becky's farm"),
+                (4, "Tom's farm"),
+            ),
+        ),
+        (5, "Internet farm")
+    ]
+
+    farm = models.IntegerField(
+        choices = FARM_CHOICES
+    )
+
+class Choices(TestCase):
+    def test_fields(self):
+        faker = fake
+        seeder = Seeder(faker)
+
+        seeder.add_entity(Animal, 10)
+
+        result = seeder.execute()
+
+        animal_object = Animal.objects.get(id=result[Animal][0])
+
+        self.assertTrue(animal_object.species in [x[0] for x in Animal.SPECIES_CHOICES])
+        self.assertTrue(animal_object.first_color in [x[0] for x in Animal.COLOR_CHOICES])
+        self.assertTrue(animal_object.second_color in [x[0] for x in Animal.COLOR_CHOICES])
+        self.assertTrue(animal_object.farm <= 5)
