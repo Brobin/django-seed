@@ -234,31 +234,36 @@ class Seeder(object):
             if klass not in inserted_entities:
                 inserted_entities[klass] = []
 
-            countdown = number
-            retry_count = number
+            # Set the number of retries to double the quantity required to
+            # accomodate for potential uniqueness failures
+            attempts = number * 2
             completed_count = 0
+
+            # Keep track of the last error
             last_error = None
 
-            while countdown > 0:
+            while attempts > 0:
                 try:
+                    # This atomic transaction block guarentees that we can
+                    # continue testing on an IntegrityError
                     with transaction.atomic():
                         executed_entity = entity.execute(using, inserted_entities)
+                        
                     inserted_entities[klass].append(executed_entity)
-                    countdown -= 1
                     completed_count += 1
                 except IntegrityError as err:
-                    if retry_count > 0:
-                        retry_count -= 1
-                    else:
-                        countdown -= 1
                     last_error = err
+                
+                # Exit if the right number of entities has been inserted
+                if completed_count == number:
+                    break
 
-            if retry_count < number:
-                print(f"Warning: could not generate instance of {klass.__name__}, integrity error:")
-                print(last_error)
+                attempts -= 1
 
-            if retry_count == 0:
-                print(f"Warning: could only generate {completed_count} out of {number} instances of {klass.__name__}, integrity errors prevented the rest")
+            if completed_count == 0:
+                raise IntegrityError(f"Error: could not generate any instances of {klass.__name__}\nInternal error: {last_error}")
+            elif completed_count != number:
+                print(f"Warning: could only generate {completed_count} out of {number} instances of {klass.__name__}, the rest errored with; {last_error}")
 
         return inserted_entities
 
