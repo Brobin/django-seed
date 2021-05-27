@@ -15,10 +15,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - name: Set up Python 3.6
+      - name: Set up Python 3.7
         uses: actions/setup-python@v2
         with:
-          python-version: 3.6
+          python-version: 3.7
       - name: Start Redis
         uses: supercharge/redis-github-action@1.1.0
         with:
@@ -39,33 +39,44 @@ jobs:
         run: |
           python ../bootcamp/manage.py seed news --settings config.settings.test
           python ../bootcamp/manage.py seed articles --settings config.settings.test
-          python ../bootcamp/manage.py seed messenger --settings config.settings.test
+          python ../bootcamp/manage.py seed messager --settings config.settings.test
           python ../bootcamp/manage.py seed users --settings config.settings.test
           python ../bootcamp/manage.py seed notifications --settings config.settings.test
           python ../bootcamp/manage.py seed qa --settings config.settings.test
-          python ../bootcamp/manage.py seed search --settings config.settings.test
 
-  drum-test:
+  django-crm-test:
     runs-on: ubuntu-latest
     continue-on-error: true
 
     steps:
       - uses: actions/checkout@v2
-      - name: Set up Python 3.6
+      - name: Set up Python 3.7
         uses: actions/setup-python@v2
         with:
-          python-version: 3.6
-      - name: Clone drum
+          python-version: 3.7
+      - name: Clone Django-CRM
         run: |
-          git clone https://github.com/stephenmcd/drum ../drum
+          git clone https://github.com/MicroPyramid/Django-CRM ../django-crm
       - name: Install dependencies
         run: |
-          $(cd ../drum; python setup.py install)
+          pip install -r ../django-crm/requirements.txt
           pip install -q -e .
-      - name: Prepare bootcamp
+      - name: Prepare Django-CRM
         run: |
-          cat .github/workflows/drum/test-settings.py >> ../drum/drum/project_template/project_name/settings.py
-          python ../drum/drum/project_template/manage.py migrate --settings project_name.settings
+          cat .github/workflows/django-crm/test-settings.py >> ../django-crm/crm/settings.py
+          python ../django-crm/manage.py migrate
       - name: Run tests
         run: |
-          python ../drum/drum/project_template/manage.py seed pages --settings project_name.settings
+          # Some tests need to be fixed
+          # python ../django-crm/manage.py seed accounts
+          # python ../django-crm/manage.py seed cases
+          python ../django-crm/manage.py seed common
+          python ../django-crm/manage.py seed contacts
+          python ../django-crm/manage.py seed emails
+          python ../django-crm/manage.py seed events
+          # python ../django-crm/manage.py seed invoices
+          # python ../django-crm/manage.py seed leads
+          # python ../django-crm/manage.py seed opportunity
+          python ../django-crm/manage.py seed planner
+          # python ../django-crm/manage.py seed tasks
+          python ../django-crm/manage.py seed teams
