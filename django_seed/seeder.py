@@ -166,11 +166,6 @@ class ModelSeeder(object):
             if field.max_length and isinstance(faker_data[data_field], str):
                 faker_data[data_field] = faker_data[data_field][: field.max_length]
 
-        from pprint import pprint
-        print("----------")
-        print(self.model)
-        pprint(faker_data)
-
         obj = manager.create(**faker_data)
 
         for field, list in self.many_relations.items():
@@ -239,16 +234,12 @@ class Seeder(object):
             if klass not in inserted_entities:
                 inserted_entities[klass] = []
 
-            # for i in range(0, number):
-            #     executed_entity = entity.execute(using, inserted_entities)
-            #     inserted_entities[klass].append(executed_entity)
             countdown = number
-            retry_count = number * 2
+            retry_count = number
             completed_count = 0
             last_error = None
 
             while countdown > 0:
-                print("countdown")
                 try:
                     with transaction.atomic():
                         executed_entity = entity.execute(using, inserted_entities)
@@ -262,8 +253,9 @@ class Seeder(object):
                         countdown -= 1
                     last_error = err
 
-            print(f"Warning: could not generate instance of {klass.__name__}, integrity error:")
-            print(last_error)
+            if retry_count < number:
+                print(f"Warning: could not generate instance of {klass.__name__}, integrity error:")
+                print(last_error)
 
             if retry_count == 0:
                 print(f"Warning: could only generate {completed_count} out of {number} instances of {klass.__name__}, integrity errors prevented the rest")
