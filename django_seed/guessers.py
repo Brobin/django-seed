@@ -120,7 +120,8 @@ class FieldTypeGuesser(object):
             return lambda x: _timezone_format(faker.date_time())
         if isinstance(field, DateField): return lambda x: faker.date()
         if isinstance(field, TimeField): return lambda x: faker.time()
-        if isinstance(field, ArrayField): return lambda x: [faker.text()]
+        if isinstance(field, ArrayField):
+            return lambda x: [self.guess_format(field.base_field)(1)]
 
         # TODO: This should be fine, but I can't find any models that I can use
         # in a simple test case.
