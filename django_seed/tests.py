@@ -185,12 +185,17 @@ class FieldTypeGuesserTestCase(TestCase):
             self.assertFalse(timezone.is_aware(value))
 
     @skipIf(django_version[0] < 2, "JSONField does not work with Django 1.11")
-    def test_guess_not_in_format(self):
-        from django.contrib.postgres.fields.jsonb import JSONField
+    def test_guess_json_format(self):
+        import json
+        try:
+            from django.db.models import JSONField
+        except ImportError:
+            from django.contrib.postgres.fields import JSONField
 
-        # postgres native JSONField has the _default_hint
         generator = self.instance.guess_format(JSONField())
-        self.assertEquals(generator({}), '{}')
+        result = generator({}, data_columns={'name': 'first_name_nonbinary'}, num_rows=1)
+        self.assertIn('name', json.loads(result))
+
 
 class SeederTestCase(TestCase):
 
