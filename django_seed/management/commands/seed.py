@@ -1,29 +1,27 @@
+import argparse
 from django.core.management.base import AppCommand
 from django_seed import Seed
 from django_seed.exceptions import SeederCommandError
 from toposort import toposort_flatten
-from optparse import make_option
 from collections import defaultdict
 
 
 class Command(AppCommand):
-    help = 'Seed your Django database with fake data'
+    help = 'Seed your Django database with fake data.'
 
-    args = "[appname ...]"
+    def add_arguments(self, parser: argparse.ArgumentParser):
+        super().add_arguments(parser)
 
-    option_list = [
-        make_option('--number', dest='number', default=10,
-                    help='number of each model to seed (default 10)'),
-    ]
+        help_text = 'The number of each model to seed (default 10).'
+        parser.add_argument('-n', '--number', action='store', nargs='?',
+                            default=10, type=int, required=False,
+                            help=help_text, dest='number')
 
-    def add_arguments(self, parser):
-        super(Command, self).add_arguments(parser)
-
-        help_text = 'number of each model to seed (default 10)'
-        parser.add_argument('--number', nargs='?', type=int, default=10, const=10, help=help_text)
-
-        help_text = '...'
-        parser.add_argument('--seeder', nargs=2, help=help_text, action="append")
+        help_text = ('Use this to specify the value a particular field should '
+                     'have rather than seeding with Faker.')
+        parser.add_argument('--seeder', action='append', nargs=2,
+                            required=False, type=str, help=help_text,
+                            metavar=('model.field', 'value'), dest='seeder')
 
     def handle_app_config(self, app_config, **options):
         if app_config.models_module is None:
@@ -37,37 +35,27 @@ class Command(AppCommand):
         # Gather seeders
         seeders = defaultdict(dict)
 
-        print(options)
+        self.stdout.write(f'Arguments: {options}', style_func=self.style.SUCCESS)
 
         if options.get('seeder'):
             for model_field, func in options['seeder']:
                 model, field = model_field.split('.')
                 seeders[model][field] = func
+                self.stdout.write(f'Forced model field: {model_field}, seeder value: {func}')
 
         # Seed
         seeder = Seed.seeder()
-
         for model in self.sorted_models(app_config):
-
             if model.__name__ in seeders:
-                print("Custom seeder {}".format(
-                    seeders[model.__name__]
-                ))
                 seeder.add_entity(model, number, seeders[model.__name__])
-
             else:
                 seeder.add_entity(model, number)
-
-            print('Seeding %i %ss' % (number, model.__name__))
+            self.stdout.write('Seeding %i %ss' % (number, model.__name__))
 
         generated = seeder.execute()
-
         for model, pks in generated.items():
             for pk in pks:
-                print("Model {} generated record with primary key {}".format(
-                    model.__name__,
-                    pk
-                ))
+                self.stdout.write(f"Model {model.__name__} generated record with primary key {pk}")
 
     def get_model_dependencies(self, models):
         dep_dict = {}
