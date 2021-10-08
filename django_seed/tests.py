@@ -184,7 +184,6 @@ class FieldTypeGuesserTestCase(TestCase):
             value = generator(datetime.now())
             self.assertFalse(timezone.is_aware(value))
 
-    @skipIf(django_version[0] < 2, "JSONField does not work with Django 1.11")
     def test_guess_json_format(self):
         import json
         try:
