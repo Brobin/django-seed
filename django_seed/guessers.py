@@ -1,4 +1,10 @@
 from django.db.models import *
+try:
+    # JSONField is not defined in Django versions < 2 or might be in
+    # another import path for versions >= 2.
+    from django.db.models import JSONField
+except ImportError:
+    from django.contrib.postgres.fields import JSONField
 from django.conf import settings
 from django.core.validators import validate_comma_separated_integer_list
 from django.utils import timezone
@@ -122,6 +128,11 @@ class FieldTypeGuesser(object):
         if isinstance(field, TimeField): return lambda x: faker.time()
         if isinstance(field, ArrayField):
             return lambda x: [self.guess_format(field.base_field)(1)]
+
+        if isinstance(field, JSONField):
+            def json_generator(_, data_columns: list = None, num_rows: int = 10, indent: int = None) -> str:
+                return faker.json(data_columns=data_columns, num_rows=num_rows, indent=indent)
+            return json_generator
 
         # TODO: This should be fine, but I can't find any models that I can use
         # in a simple test case.
