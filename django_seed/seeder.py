@@ -213,16 +213,18 @@ class Seeder(object):
         }
         self.orders.append(order)
 
-    def execute(self, using=None, inserted_entities={}):
+    def execute(self, using=None, inserted_entities=None):
         """
         Populate the database using all the Entity classes previously added.
         :param using A Django database connection name
         :rtype: A list of the inserted PKs
         """
+        if inserted_entities is None:
+            inserted_entities = {}
+
         if not using:
             using = self.get_connection()
 
-        inserted_entities = {}
         while len(self.orders):
             order = self.orders.pop(0)
             number = order["quantity"]
