@@ -23,6 +23,11 @@ class Command(AppCommand):
                             required=False, type=str, help=help_text,
                             metavar=('model.field', 'value'), dest='seeder')
 
+        help_text = 'Truncate app tables before seeding.'
+        parser.add_argument('--truncate', action='store_true',
+                            default=False, required=False,
+                            help=help_text, dest='truncate')
+
     def handle_app_config(self, app_config, **options):
         if app_config.models_module is None:
             raise SeederCommandError('You must provide an app to seed')
@@ -50,6 +55,15 @@ class Command(AppCommand):
                 seeder.add_entity(model, number, seeders[model.__name__])
             else:
                 seeder.add_entity(model, number)
+
+            if options['truncate']:
+                self.stdout.write(f"Truncating {model.__name__} before seeding...",
+                                  style_func=self.style.WARNING)
+                manager = model.objects.db_manager()
+                total, _ = manager.all().delete()
+                self.stdout.write(f"Removed {total} {model.__name__} objects.",
+                                  style_func=self.style.WARNING)
+
             self.stdout.write('Seeding %i %ss' % (number, model.__name__))
 
         generated = seeder.execute()
