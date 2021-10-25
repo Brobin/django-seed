@@ -3,7 +3,6 @@ import sys
 import django
 from django.conf import settings
 from django.test.utils import get_runner
-import sys
 from collections import defaultdict
 
 
@@ -17,8 +16,9 @@ def configure(databases):
             'django_seed',
             'django_nose',
         ),
-        TEST_RUNNER = 'django_nose.NoseTestSuiteRunner',
-        NOSE_ARGS = [
+        TEST_RUNNER='django_nose.NoseTestSuiteRunner',
+        NOSE_ARGS=[
+            '--exe',  # nose will skip files with the executable bit set without this
             '--with-coverage',
             '--cover-package=django_seed',
         ],
