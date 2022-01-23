@@ -1,4 +1,5 @@
-import random, logging
+import random
+import logging
 
 from django.db.models import ForeignKey, ManyToManyField, OneToOneField
 
@@ -49,7 +50,8 @@ class ModelSeeder(object):
     def build_many_relation(field, related_model):
         def func(inserted):
             if related_model in inserted and inserted[related_model]:
-                max_relations = min(10, round(len(inserted[related_model]) / 5) + 1)
+                max_relations = min(
+                    10, round(len(inserted[related_model]) / 5) + 1)
 
                 return_list = []
                 for _ in range(random.randint(1, max_relations)):
@@ -111,7 +113,8 @@ class ModelSeeder(object):
                 continue
 
             if isinstance(field, ForeignKey):
-                formatters[field_name] = self.build_relation(field, field.related_model)
+                formatters[field_name] = self.build_relation(
+                    field, field.related_model)
                 continue
 
             if not field.choices:
@@ -165,7 +168,6 @@ class ModelSeeder(object):
 
             if field.max_length and isinstance(faker_data[data_field], str):
                 faker_data[data_field] = faker_data[data_field][: field.max_length]
-
         obj = manager.create(**faker_data)
 
         for field, list in self.many_relations.items():
@@ -184,6 +186,14 @@ class Seeder(object):
         """
         self.faker = faker
         self.orders = []
+
+    @staticmethod
+    def turn_on_auto_add_fields(model):
+        for field in model._meta.fields:
+            if hasattr(field, 'auto_now'):
+                field.auto_now = True
+            if hasattr(field, 'auto_now_add'):
+                field.auto_now_add = True
 
     def add_entity(self, model, number, customFieldFormatters=None):
         """
@@ -221,7 +231,6 @@ class Seeder(object):
         """
         if not using:
             using = self.get_connection()
-
         inserted_entities = {}
         while len(self.orders):
             order = self.orders.pop(0)
@@ -247,13 +256,14 @@ class Seeder(object):
                     # This atomic transaction block guarentees that we can
                     # continue testing on an IntegrityError
                     with transaction.atomic():
-                        executed_entity = entity.execute(using, inserted_entities)
-                        
+                        executed_entity = entity.execute(
+                            using, inserted_entities)
+
                     inserted_entities[klass].append(executed_entity)
                     completed_count += 1
                 except IntegrityError as err:
                     last_error = err
-                
+
                 # Exit if the right number of entities has been inserted
                 if completed_count == number:
                     break
@@ -261,9 +271,11 @@ class Seeder(object):
                 attempts -= 1
 
             if completed_count == 0:
-                raise IntegrityError(f"Error: could not generate any instances of {klass.__name__}\nInternal error: {last_error}")
+                raise IntegrityError(
+                    f"Error: could not generate any instances of {klass.__name__}\nInternal error: {last_error}")
             elif completed_count != number:
-                print(f"Warning: could only generate {completed_count} out of {number} instances of {klass.__name__}, the rest errored with; {last_error}")
+                print(
+                    f"Warning: could only generate {completed_count} out of {number} instances of {klass.__name__}, the rest errored with; {last_error}")
 
         return inserted_entities
 
