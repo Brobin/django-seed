@@ -31,6 +31,7 @@ fake = Faker()
 DEF_LD = "default long description"
 DEF_SD = "default short description"
 
+
 @contextmanager
 def django_setting(name, value):
     """
@@ -49,6 +50,8 @@ def django_setting(name, value):
         setattr(settings, name, original_value)
 
 # Game models
+
+
 class Game(models.Model):
     title = models.CharField(max_length=200)
     slug = models.SlugField(max_length=200)
@@ -73,9 +76,11 @@ class Player(models.Model):
     last_login_at = models.DateTimeField()
     game = models.ForeignKey(to=Game, on_delete=models.CASCADE)
     ip = models.GenericIPAddressField()
-    achievements = models.CharField(validators=[validate_comma_separated_integer_list], max_length=1000)
+    achievements = models.CharField(
+        validators=[validate_comma_separated_integer_list], max_length=1000)
     friends = models.PositiveIntegerField()
     balance = models.FloatField()
+
 
 class Action(models.Model):
     ACTION_FIRE = 'fire'
@@ -90,15 +95,20 @@ class Action(models.Model):
     executed_at = models.DateTimeField()
     duration = models.DurationField()
     uuid = models.UUIDField()
-    actor = models.ForeignKey(to=Player,on_delete=models.CASCADE,related_name='actions', null=False)
-    target = models.ForeignKey(to=Player,on_delete=models.CASCADE, related_name='enemy_actions+', null=True)
+    actor = models.ForeignKey(
+        to=Player, on_delete=models.CASCADE, related_name='actions', null=False)
+    target = models.ForeignKey(
+        to=Player, on_delete=models.CASCADE, related_name='enemy_actions+', null=True)
 
 # Product models
+
+
 class Product(models.Model):
     name = models.CharField(max_length=100)
     short_description = models.CharField(max_length=100, default=DEF_SD)
     description = models.TextField(default=DEF_LD)
     enabled = models.BooleanField(default=True)
+
 
 class Customer(models.Model):
     name = models.CharField(max_length=255)
@@ -108,6 +118,8 @@ class Customer(models.Model):
     comments = models.TextField(max_length=500)
 
 # Reporter models
+
+
 class Pen(models.Model):
     ink_left = models.PositiveIntegerField()
 
@@ -155,7 +167,8 @@ class NameGuesserTestCase(TestCase):
         self.instance = NameGuesser(fake)
 
     def test_guess_format_timezone(self):
-        test_names = ('something_at', 'something_At', 'gameUpdated_At', 'game_created_at')
+        test_names = ('something_at', 'something_At',
+                      'gameUpdated_At', 'game_created_at')
 
         with django_setting('USE_TZ', True):
             for name in test_names:
@@ -192,7 +205,8 @@ class FieldTypeGuesserTestCase(TestCase):
             from django.contrib.postgres.fields import JSONField
 
         generator = self.instance.guess_format(JSONField())
-        result = generator({}, data_columns={'name': 'first_name_nonbinary'}, num_rows=1)
+        result = generator({}, data_columns={
+                           'name': 'first_name_nonbinary'}, num_rows=1)
         self.assertIn('name', json.loads(result))
 
 
@@ -224,11 +238,14 @@ class SeederTestCase(TestCase):
 
         self.assertEqual(len(inserted_pks[Game]), 30)
         self.assertEqual(len(Game.objects.all()), 30)
-        self.assertEqual(Game.objects.get(id=inserted_pks[Game][0]).title, "First Game")
-        self.assertEqual(Game.objects.get(id=inserted_pks[Game][-1]).title, "Second Game")
+        self.assertEqual(Game.objects.get(
+            id=inserted_pks[Game][0]).title, "First Game")
+        self.assertEqual(Game.objects.get(
+            id=inserted_pks[Game][-1]).title, "Second Game")
 
     def test_guesser(self):
         faker = fake
+
         def title_fake(arg):
             title_fake.count += 1
             name = faker.company()
@@ -274,7 +291,8 @@ class SeederTestCase(TestCase):
         })
         inserted_pks = seeder.execute()
         self.assertTrue(len(inserted_pks[NotCoveredFields]) == 10)
-        self.assertTrue(all([field.json for field in NotCoveredFields.objects.all()]))
+        self.assertTrue(
+            all([field.json for field in NotCoveredFields.objects.all()]))
 
     def test_locale(self):
         ad = AlphabetDetector()
@@ -282,7 +300,8 @@ class SeederTestCase(TestCase):
         seeder = Seeder(faker)
         seeder.add_entity(Game, 5)
         seeder.execute()
-        self.assertTrue(all([ad.is_cyrillic(game.title) for game in Game.objects.all()]))
+        self.assertTrue(all([ad.is_cyrillic(game.title)
+                        for game in Game.objects.all()]))
 
     def test_null_foreign_key(self):
         faker = fake
@@ -325,6 +344,46 @@ class SeederTestCase(TestCase):
 
         games = Game.objects.filter(pk__in=inserted_pks)
         self.assertTrue(all(game.updated_at == date for game in games))
+
+    def test_raise_error_for_auto_now_add_fields(self):
+        date = datetime(1957, 3, 6, 13, 13)
+        faker = fake
+        seeder = Seeder(faker)
+        seeder.add_entity(Game, 10)
+        seeder.execute()
+
+        def create_game():
+            game = Game.objects.create(
+                title='test',
+                game_started=date,
+                description="Test",
+                active=True,
+                max_score=10,
+                levels=1,
+                likes=10
+            )
+        with self.assertRaisesMessage(Exception,
+                                      "NOT NULL constraint failed: django_seed_game.created_at"):
+            create_game()
+
+    def test_turn_on_auto_add_fields(self):
+        date = datetime(1957, 3, 6, 13, 13)
+        faker = fake
+        seeder = Seeder(faker)
+        seeder.turn_on_auto_add_fields(Game)
+
+        def create_game():
+            game = Game.objects.create(
+                title='test',
+                game_started=date,
+                description="Test",
+                active=True,
+                max_score=10,
+                levels=1,
+                likes=10
+            )
+        create_game()
+        self.assertEqual(1, Game.objects.count())
 
 
 class APISeedTestCase(TestCase):
@@ -377,12 +436,14 @@ class SeedCommandTestCase(TestCase):
         pass
 
     def test_seed_command_forced_field(self):
-        call_command('seed', 'django_seed', '--seeder', 'Customer.name', 'BobbyLongName', '--number=12')
+        call_command('seed', 'django_seed', '--seeder',
+                     'Customer.name', 'BobbyLongName', '--number=12')
 
         customers = Customer.objects.all()
-        
+
         self.assertTrue(customers[0].name == 'BobbyLongName')
         self.assertTrue(len(customers) == 12)
+
 
 class DefaultValueTestCase(TestCase):
 
@@ -390,7 +451,7 @@ class DefaultValueTestCase(TestCase):
         faker = fake
         seeder = Seeder(faker)
 
-        seeder.add_entity(Product, 1, {'name':'Awesome Product'})
+        seeder.add_entity(Product, 1, {'name': 'Awesome Product'})
         _id = seeder.execute()
 
         self.assertIsNotNone(_id)
@@ -404,7 +465,7 @@ class DefaultValueTestCase(TestCase):
         faker = fake
         seeder = Seeder(faker)
 
-        seeder.add_entity(Product, 1, {'name':'Great Product'})
+        seeder.add_entity(Product, 1, {'name': 'Great Product'})
         _id = seeder.execute()
 
         self.assertIsNotNone(_id)
@@ -412,6 +473,7 @@ class DefaultValueTestCase(TestCase):
         product = Product.objects.get(id=_id[Product][0])
 
         self.assertEquals(product.description, DEF_LD)
+
 
 class LengthRulesTestCase(TestCase):
 
@@ -439,23 +501,20 @@ class LengthRulesTestCase(TestCase):
         customer = Customer.objects.get(id=_id[Customer][0])
 
         self.assertTrue(len(customer.name) <= name_max_len,
-            "name with length {}, does not respect max length restriction of {}"
-            .format(len(customer.name), name_max_len))
+                        "name with length {}, does not respect max length restriction of {}"
+                        .format(len(customer.name), name_max_len))
 
         self.assertTrue(len(customer.country) <= country_max_len,
-            "country with length {}, does not respect max length restriction of {}"
-            .format(len(customer.name), country_max_len))
+                        "country with length {}, does not respect max length restriction of {}"
+                        .format(len(customer.name), country_max_len))
 
         self.assertTrue(len(customer.address) <= address_max_len,
-            "address with length {}, does not respect max length restriction of {}"
-            .format(len(customer.name), address_max_len))
+                        "address with length {}, does not respect max length restriction of {}"
+                        .format(len(customer.name), address_max_len))
 
         self.assertTrue(len(customer.comments) <= comments_max_len,
-            "comments with length {}, does not respect max length restriction of {}"
-            .format(len(customer.comments), comments_max_len))
-
-
-
+                        "comments with length {}, does not respect max length restriction of {}"
+                        .format(len(customer.comments), comments_max_len))
 
     def test_default_with_max_length(self):
         faker = fake
@@ -469,6 +528,7 @@ class LengthRulesTestCase(TestCase):
 
         self.assertTrue(len(DEF_LD) == len(product.description))
 
+
 class RelationshipTestCase(TestCase):
 
     def test_one_to_one(self):
@@ -479,7 +539,8 @@ class RelationshipTestCase(TestCase):
         seeder.add_entity(Reporter, 1)
 
         result = seeder.execute()
-        self.assertEqual(Reporter.objects.get(id=result[Reporter][0]).pen.pk, result[Pen][0])
+        self.assertEqual(Reporter.objects.get(
+            id=result[Reporter][0]).pen.pk, result[Pen][0])
 
     def test_one_to_one_wrong_order(self):
         faker = fake
@@ -500,9 +561,11 @@ class RelationshipTestCase(TestCase):
 
         results = seeder.execute()
 
-        self.assertNotEqual(Reporter.objects.get(id=results[Reporter][0]), None)
+        self.assertNotEqual(Reporter.objects.get(
+            id=results[Reporter][0]), None)
         self.assertNotEqual(Article.objects.get(id=results[Article][0]), None)
-        self.assertEqual(Article.objects.get(id=results[Article][0]).reporter.pk, results[Reporter][0])
+        self.assertEqual(Article.objects.get(
+            id=results[Article][0]).reporter.pk, results[Reporter][0])
 
     def test_many_to_one_wrong_order(self):
         faker = fake
@@ -527,7 +590,8 @@ class RelationshipTestCase(TestCase):
         self.assertNotEqual(Newspaper.objects.get(id=1), None)
         self.assertNotEqual(Reporter.objects.get(id=1), None)
         self.assertNotEqual(Article.objects.get(id=1), None)
-        self.assertEqual(len(Reporter.objects.get(id=1).newspaper_set.all()), 1)
+        self.assertEqual(
+            len(Reporter.objects.get(id=1).newspaper_set.all()), 1)
 
     # TODO: This test should work once
     # https://github.com/Brobin/django-seed/issues/79 is resolved
@@ -550,9 +614,10 @@ class RelationshipTestCase(TestCase):
     #     self.assertNotEqual(Article.objects.get(id=1), None)
     #     self.assertEqual(len(Reporter.objects.get(id=1).newspaper_set.all()), 1)
 
+
 class EdgeCaseFieldTestCase(TestCase):
 
-    @skipIf(settings.DATABASES['default']['ENGINE'] != 'django.db.backends.postgresql_psycopg2', "Postgres database is not configured, or the tests aren't being run with the `actions` argument.")
+    @ skipIf(settings.DATABASES['default']['ENGINE'] != 'django.db.backends.postgresql_psycopg2', "Postgres database is not configured, or the tests aren't being run with the `actions` argument.")
     def test_postgres_array_field(self):
         print("Aasdf")
         faker = fake
@@ -560,6 +625,7 @@ class EdgeCaseFieldTestCase(TestCase):
         seeder.add_entity(NotCoveredFields, 1)
 
         seeder.execute()
+
 
 class Animal(models.Model):
     SPECIES_CHOICES = [
@@ -569,8 +635,8 @@ class Animal(models.Model):
     ]
 
     species = models.CharField(
-        max_length = 2,
-        choices = SPECIES_CHOICES
+        max_length=2,
+        choices=SPECIES_CHOICES
     )
 
     COLOR_CHOICES = [
@@ -580,11 +646,11 @@ class Animal(models.Model):
     ]
 
     first_color = models.SmallIntegerField(
-        choices = COLOR_CHOICES, unique=True
+        choices=COLOR_CHOICES, unique=True
     )
 
     second_color = models.BigIntegerField(
-        choices = COLOR_CHOICES
+        choices=COLOR_CHOICES
     )
 
     FARM_CHOICES = [
@@ -606,8 +672,9 @@ class Animal(models.Model):
     ]
 
     farm = models.IntegerField(
-        choices = FARM_CHOICES
+        choices=FARM_CHOICES
     )
+
 
 class Choices(TestCase):
     def test_fields(self):
@@ -620,10 +687,14 @@ class Choices(TestCase):
 
         animal_object = Animal.objects.get(id=result[Animal][0])
 
-        self.assertTrue(animal_object.species in [x[0] for x in Animal.SPECIES_CHOICES])
-        self.assertTrue(animal_object.first_color in [x[0] for x in Animal.COLOR_CHOICES])
-        self.assertTrue(animal_object.second_color in [x[0] for x in Animal.COLOR_CHOICES])
+        self.assertTrue(animal_object.species in [
+                        x[0] for x in Animal.SPECIES_CHOICES])
+        self.assertTrue(animal_object.first_color in [
+                        x[0] for x in Animal.COLOR_CHOICES])
+        self.assertTrue(animal_object.second_color in [
+                        x[0] for x in Animal.COLOR_CHOICES])
         self.assertTrue(animal_object.farm <= 5)
+
 
 class UniquenessTestCase(TestCase):
     def test_pigeon_hole_principle(self):
