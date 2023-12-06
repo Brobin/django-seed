@@ -31,7 +31,7 @@ class Seed(object):
         code = codename or cls.codename(locale)
         if code not in cls.fakers:
             from faker import Faker
-            cls.fakers[code] = Faker(locale)
+            cls.fakers[code] = Faker(code)
             cls.fakers[code].seed_instance(random.randint(1, 10000))
         return cls.fakers[code]
 
