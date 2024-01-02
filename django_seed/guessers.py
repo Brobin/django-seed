@@ -24,7 +24,7 @@ def _timezone_format(value):
     :return: A locale aware datetime
     """
     if getattr(settings, 'USE_TZ', False):
-        return timezone.make_aware(value, timezone.get_current_timezone(), is_dst=False)
+        return timezone.make_aware(value, timezone.get_current_timezone())
     return value
 
 
